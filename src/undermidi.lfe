@@ -5,7 +5,10 @@
    (ping 0)
    (example 0)
    (send 1)
-   (stop-port 0)))
+   (stop-port 0)
+   (version 0)
+   (version-go-midi-server 0)
+   (versions 0)))
 
 (include-lib "logjam/include/logjam.hrl")
 
@@ -28,3 +31,14 @@
 
 (defun stop-port ()
   (undermidi.go.server:send #(command stop)))
+
+(defun version ()
+  (undermidi.util:version))
+
+(defun version-go-midi-server ()
+  (undermidi.go.server:send #(command version)))
+
+(defun versions ()
+  (let ((`#(result ,go-app-vsn) (version-go-midi-server)))
+    (++ (undermidi.util:versions)
+        `(#(midiserver ,go-app-vsn)))))
