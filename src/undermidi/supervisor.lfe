@@ -6,6 +6,8 @@
   (export
    (init 1)))
 
+(include-lib "logjam/include/logjam.hrl")
+
 (defun SERVER () (MODULE))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -13,7 +15,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun start_link ()
-  (logger:info "Starting supervisor ...")
+  (log-info "Starting supervisor ...")
   (supervisor:start_link `#(local ,(SERVER)) (MODULE) '()))
 
 (defun stop ()

@@ -16,6 +16,8 @@
    (port-info 0)
    (send 1)))
 
+(include-lib "logjam/include/logjam.hrl")
+
 (defun SERVER () (MODULE))
 (defun DELIMITER () '(10))
 (defun GO-BIN () "go/src/github.com/geomyidia/erl-midi-server/bin/midiserver")
@@ -111,8 +113,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun create-port ()
-  (undermidi.util:create-port 
-    (filename:join (undermidi.util:priv-dir) (GO-BIN)) '()))
+  (let ((go-bin (filename:join (undermidi.util:priv-dir) (GO-BIN))))
+    (log-debug "Creating port for ~p ..." (list go-bin))
+    (undermidi.util:create-port go-bin '())))
 
 (defun stop-port (port)
+  (gen_server:call (MODULE) #(command stop))
   (! port `#(,(self) 'close)))

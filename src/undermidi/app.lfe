@@ -10,6 +10,8 @@
    (servers 0)
    (supervisor 0)))
 
+(include-lib "logjam/include/logjam.hrl")
+
 (defun SUPERVISOR () 'undermidi.supervisor)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -17,8 +19,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun start (_start-type _start-args)
-  (logger:set_application_level 'ports 'all)
-  (logger:info "Starting application" '())
+  (logger:set_application_level 'undermidi 'all)
+  (log-info "Starting top-level OTP app ..." '())
   (undermidi.supervisor:start_link))
 
 (defun stop (_state)
