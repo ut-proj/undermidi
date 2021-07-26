@@ -1,0 +1,17 @@
+{application, undermidi,
+ [{description, "An LFE MIDI Port Server"},
+  {vsn, "0.0.0"},
+  {registered, [undermidi]},
+  {mod, {'undermidi.app', []}},
+  {applications,
+   [kernel,
+    stdlib,
+    lfe
+   ]},
+  {env,[]},
+  {modules, ['undermidi.go.server', 'undermidi.util']},
+
+  {licenses, ["BSD 2-clause"]},
+  {links, []},
+  {exclude_files, ["priv/*"]}
+ ]}.

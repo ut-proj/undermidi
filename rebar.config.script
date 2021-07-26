@@ -1,0 +1,6 @@
+GoPrefix = "priv/go",
+{ok, CurrentDirectory} = file:get_cwd(),
+os:putenv("GOPATH", filename:join([CurrentDirectory, GoPrefix])),
+os:putenv("GO111MODULE", "on"),
+os:putenv("ERL_AFLAGS", "-kernel shell_history enabled"),
+CONFIG.
