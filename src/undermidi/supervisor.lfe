@@ -30,7 +30,7 @@
   `#(ok #(#m(strategy one_for_one
              intensity 3
 	           period 60)
-          (,(child 'undermidi.go.server)))))
+          (,(child 'undermidi.go.portserver)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

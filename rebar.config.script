@@ -1,6 +1,9 @@
 GoPrefix = "priv/go",
+Project = "src/github.com/geomyidia/erl-midi-server",
+Binary = "bin/midiserver",
 {ok, CurrentDirectory} = file:get_cwd(),
 os:putenv("GOPATH", filename:join([CurrentDirectory, GoPrefix])),
+os:putenv("MIDISERVER", filename:join([CurrentDirectory, GoPrefix, Project, Binary])),
 os:putenv("GO111MODULE", "on"),
 os:putenv("ERL_AFLAGS", "-kernel shell_history enabled"),
 CONFIG.

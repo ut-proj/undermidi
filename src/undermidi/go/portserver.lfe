@@ -1,4 +1,4 @@
-(defmodule undermidi.go.server
+(defmodule undermidi.go.portserver
   (behaviour gen_server)
   (export
    (start_link 0)
@@ -20,7 +20,6 @@
 
 (defun SERVER () (MODULE))
 (defun DELIMITER () '(10))
-(defun GO-BIN () "go/src/github.com/geomyidia/erl-midi-server/bin/midiserver")
 (defun GO-TIMEOUT () 100)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -113,9 +112,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun create-port ()
-  (let ((go-bin (filename:join (undermidi.util:priv-dir) (GO-BIN))))
-    (log-debug "Creating port for ~p ..." (list go-bin))
-    (undermidi.util:create-port go-bin '())))
+  (let* ((midiserver (os:getenv "MIDISERVER")))
+    (log-debug "Creating port for ~s ..." (list midiserver))
+    (undermidi.util:create-port midiserver '())))
 
 (defun stop-port (port)
   (gen_server:call (MODULE) #(command stop))
