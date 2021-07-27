@@ -1,3 +1,4 @@
+.DS_Store
 /apps/ports/priv/
 .rebar3
 _*
