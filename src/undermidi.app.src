@@ -10,7 +10,11 @@
     erlexec
    ]},
   {env,[]},
-  {modules, ['undermidi.go.server', 'undermidi.util']},
+  {modules, [
+    'undermidi.go.execserver',
+    'undermidi.go.portserver',
+    'undermidi.util'
+  ]},
 
   {licenses, ["BSD 2-clause"]},
   {links, []},

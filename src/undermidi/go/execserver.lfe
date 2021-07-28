@@ -44,8 +44,6 @@
 (defun genserver-opts () '())
 (defun unknown-command (data)
   `#(error ,(lists:flatten (++ "Unknown command: " data))))
-(defun unknown-info (data)
-  `#(error ,(lists:flatten (++ "Unknown info: " data))))
 
 ;;;;;::=-----------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   gen_server implementation   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -209,34 +207,6 @@
           (binary_to_list)
           (string:replace "\\" "")
           (string:trim)))
-
-(defun midi-hash->map (hash)
-  (let* ((note-state (band hash #b1))
-         (channel (band (bsr hash 1) #b1111))
-         (pitch (band (bsr hash 5) #b111111))
-         (velocity (band (bsr hash 12) #b111111))
-         (time (band (bsr hash 19) #b11111111111111111111)))
-    `#m(note-state ,(if (== note-state 1) 'on 'off)
-        channel ,channel
-        pitch ,pitch
-        velocity ,velocity
-        time ,time)))
-
-(defun stdout-map-regex ()
-  "(^\\\[\\\")*(?<MAP>['`]*#[mM][^\\\"\\\]]+)(\"\])*$")
-
-(defun match-stdout-map (string)
-  (re:run string (stdout-map-regex) '(#(capture 'MAP list))))
-
-(defun handle-stdout-data
-  (((= `#m(type sequence-step
-           data #m(beat ,beat
-                   note ,note
-                   note-duration ,dur)) map-data))
-   (log-notice `#m(data ,map-data))
-   (log-warn "XXX: Save to ETS table!"))
-  ((msg)
-   (log-warn "Unhandled data format: ~p" `(,msg))))
 
 (defun join-cmd-args (cmd args)
   (clj:-> (list cmd)

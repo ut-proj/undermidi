@@ -38,13 +38,13 @@
   (supervisor:which_children (SUPERVISOR)))
 
 (defun servers ()
-  `(#(go ,(undermidi.go.server:pid))))
+  `(#(go ,(undermidi.supervisor:child-pid))))
 
 (defun ports ()
-  `(#(go ,(undermidi.go.server:port))))
+  `(#(go ,(undermidi.supervisor:child-port))))
 
 (defun info ()
   `(#(app ,(erlang:process_info (self)))
     #(supervisor ,(erlang:process_info (supervisor)))
-    #(go (#(server ,(erlang:process_info (undermidi.go.server:pid)))
-          #(port ,(erlang:port_info (undermidi.go.server:port)))))))
+    #(go (#(server ,(erlang:process_info (undermidi.supervisor:child-pid)))
+          #(port ,(erlang:port_info (undermidi.supervisor:child-port)))))))

@@ -84,7 +84,10 @@
 
 (defun bin->hex (bin)
   (if (>= 24 (list_to_integer (erlang:system_info 'otp_release)))
-    (call 'binary 'encode_hex bin)
+    ;; Can we get around the linter for older versions?
+    (let ((mod 'binary)
+          (func 'encode_hex))
+      (call mod func bin))
     (lists:flatten
      (list-comp ((<- x (binary_to_list bin)))
        (io_lib:format "~2.16.0B" `(,x))))))

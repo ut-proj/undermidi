@@ -7,6 +7,8 @@
    (init 1))
   ;; Child API
   (export
+   (child-pid 0)
+   (child-port 0)
    (example 0)
    (pid 0)
    (ping 0)
@@ -18,6 +20,7 @@
 (include-lib "logjam/include/logjam.hrl")
 
 (defun SERVER () (MODULE))
+;; XXX make the following configurable
 ;;(defun go-server () 'undermidi.go.portserver)
 (defun go-server () 'undermidi.go.execserver)
 
@@ -30,7 +33,7 @@
   (supervisor:start_link `#(local ,(SERVER)) (MODULE) '()))
 
 (defun stop ()
-  (undermidi.go.server:stop)
+  (call (go-server) 'stop)
   (exit (pid) 'shutdown))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -46,6 +49,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun child-pid ()
+  (call (go-server) 'pid))
+
+(defun child-port ()
+  (call (go-server) 'port))
 
 (defun example ()
   (send #(command example)))
