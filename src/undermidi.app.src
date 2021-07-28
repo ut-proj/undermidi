@@ -6,7 +6,8 @@
   {applications,
    [kernel,
     stdlib,
-    lfe
+    lfe,
+    erlexec
    ]},
   {env,[]},
   {modules, ['undermidi.go.server', 'undermidi.util']},

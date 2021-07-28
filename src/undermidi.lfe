@@ -4,10 +4,12 @@
   (export
    (ping 0)
    (example 0)
+   (quit 0)
    (send 1)
+   (state 0)
    (stop-port 0)
    (version 0)
-   (version-go-midi-server 0)
+   (version-midiserver 0)
    (versions 0)))
 
 (include-lib "logjam/include/logjam.hrl")
@@ -15,30 +17,43 @@
 (defun start ()
   (logger:set_primary_config #m(level all))
   (logjam:set-handler-from-config "config/sys.config")
-  (log-notice "Starting undermidi application ...")
+  (log-notice "Starting undermidi ...")
   (application:ensure_all_started 'undermidi))
+
+(defun quit ()
+  (log-info "Stopping OTP application ...")
+  (application:stop 'undermidi)
+  (timer:sleep 500)
+  (log-info "Stopping exec process manager ...")
+  (application:stop 'erlexec)
+  (timer:sleep 500)
+  (log-notice "undertone shutdown complete")
+  (init:stop))
 
 ;;; Aliases
 
-(defun ping ()
-  (undermidi.go.server:send #(command ping)))
-
 (defun example ()
-  (undermidi.go.server:send #(command example)))
+  (undermidi.supervisor:example))
+
+(defun ping ()
+  (undermidi.supervisor:ping))
 
 (defun send (msg)
-  (undermidi.go.server:send msg))
+  (undermidi.supervisor:send msg))
+
+(defun state ()
+  (undermidi.supervisor:state))
 
 (defun stop-port ()
-  (undermidi.go.server:send #(command stop)))
+  (undermidi.supervisor:stop-port))
 
 (defun version ()
   (undermidi.util:version))
 
-(defun version-go-midi-server ()
-  (undermidi.go.server:send #(command version)))
+(defun version-midiserver ()
+  (undermidi.supervisor:version))
 
 (defun versions ()
-  (let ((`#(result ,go-app-vsn) (version-go-midi-server)))
+  (let ((`#(result ,go-app-vsn) (version-midiserver)))
     (++ (undermidi.util:versions)
         `(#(midiserver ,go-app-vsn)))))

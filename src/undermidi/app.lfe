@@ -20,7 +20,7 @@
 
 (defun start (_start-type _start-args)
   (logger:set_application_level 'undermidi 'all)
-  (log-info "Starting top-level OTP app ..." '())
+  (log-info "Starting OTP application ..." '())
   (undermidi.supervisor:start_link))
 
 (defun stop (_state)
