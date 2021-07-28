@@ -1,5 +1,6 @@
 (defmodule undermidi.util
   (export
+   (bin->hex 1)
    (create-port 2)
    (priv-dir 0)
    (receive-line 2)
@@ -80,3 +81,10 @@
         (log-debug "Reversed: ~p" `(,rev))
         (log-debug "Binary: ~p" `(,bin))
         bin))))
+
+(defun bin->hex (bin)
+  (if (>= 24 (list_to_integer (erlang:system_info 'otp_release)))
+    (call 'binary 'encode_hex bin)
+    (lists:flatten
+     (list-comp ((<- x (binary_to_list bin)))
+       (io_lib:format "~2.16.0B" `(,x))))))

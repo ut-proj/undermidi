@@ -78,7 +78,7 @@
    (let* ((cmd (erlang:term_to_binary cmd))
           (delim (DELIMITER))
           (msg (binary (cmd binary) (delim binary)))
-          (hex-msg (binary ((binary:encode_hex cmd) binary) (delim binary))))
+          (hex-msg (binary ((undermidi.util:bin->hex cmd) binary) (delim binary))))
      (log-debug "Sending hex-msg: ~p ..." (list hex-msg))
      (exec:send os-pid hex-msg)
      `#(noreply ,state)))
