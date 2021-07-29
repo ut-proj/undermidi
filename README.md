@@ -26,7 +26,7 @@ variables.
 Build the required Go MIDI server and compile the LFE:
 
 ```shell
-$ make
+$ make clean && make
 ```
 
 Start up the LFE REPL:
@@ -38,33 +38,23 @@ $ rebar3 lfe repl
 Start the app:
 
 ```cl
-lfe> (application:ensure_all_started 'undermidi)
+lfe> (undermidi:start)
 ```
 
-See the running `gen_server`s for the Go MIDI server:
-
-```lisp
-lfe> (undermidi.app:children)
-```
-```lisp
-(#(ports.lisp.server #Pid<0.366.0> worker (ports.lisp.server))
- #(ports.go.server #Pid<0.365.0> worker (ports.go.server)))
-```
+Depending upon the configured log level, you may see a fair amount of output, including the Go MIDI server being started.
 
 ## API
 
 ```lisp
-(ports.go.server:send #(command echo))
-```
-```lisp
-#(result "echo")
+lfe> (undermidi:ping)
+pong
 ```
 
+Play the example MIDI code (requires the first MIDI device on your system, index 0, to be connected to a MIDI device, hardware or software, listening on channel 1):
+
 ```lisp
-(ports.lisp.server:send #(command echo))
-```
-```lisp
-#(result "echo")
+lfe> (undermidi:example)
+ok
 ```
 
 [//]: ---Named-Links---

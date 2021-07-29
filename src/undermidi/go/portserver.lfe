@@ -105,7 +105,15 @@
   (erlang:port_info (port)))
 
 (defun send (msg)
-  (gen_server:call (MODULE) msg))
+  (erlang:process_flag 'trap_exit 'true)
+  (try
+      (gen_server:call (MODULE) msg)
+    (catch
+      ((tuple 'exit `#(noproc ,_) _stack)
+       (log-err "Go server not running"))
+      ((tuple type value stack)
+       (log-err "Unexpected port error.~ntype: ~p~nvalue: ~p~nstacktrace: ~p"
+                (list type value stack))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Internal Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

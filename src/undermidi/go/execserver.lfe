@@ -36,7 +36,7 @@
 
 (defun initial-state ()
   `#m(opts ()
-      args ()
+      args ("-loglevel" "debug" "-daemon")
       binary ,(os:getenv "MIDISERVER")
       pid undefined
       os-pid undefined))
@@ -156,7 +156,15 @@
 ;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun send (msg)
-  (gen_server:cast (MODULE) msg))
+  (erlang:process_flag 'trap_exit 'true)
+  (try
+      (gen_server:cast (MODULE) msg)
+    (catch
+      ((tuple 'exit `#(noproc ,_) _stack)
+       (log-err "Go server not running"))
+      ((tuple type value stack)
+       (log-err "Unexpected port error.~ntype: ~p~nvalue: ~p~nstacktrace: ~p"
+                (list type value stack))))))
 
 ;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   management API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
