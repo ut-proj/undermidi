@@ -10,6 +10,7 @@
    (child-pid 0)
    (child-port 0)
    (example 0)
+   (list-devices 0)
    (pid 0)
    (ping 0)
    (send 1)
@@ -57,7 +58,13 @@
   (call (go-server) 'port))
 
 (defun example ()
-  (send #(command example)))
+  (send '(#(command example) #(args (#(channel 0)
+                                     #(device 0)
+                                     #(pitch 48)
+                                     #(duration 4))))))
+
+(defun list-devices ()
+  (send #(command list-devices)))
 
 (defun pid ()
   (erlang:whereis (MODULE)))

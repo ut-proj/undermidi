@@ -2,8 +2,9 @@
   (export
    (start 0))
   (export
-   (ping 0)
    (example 0)
+   (list-devices 0)
+   (ping 0)
    (quit 0)
    (send 1)
    (state 0)
@@ -20,6 +21,9 @@
   (log-notice "Starting undermidi ...")
   (application:ensure_all_started 'undermidi))
 
+(defun stop ()
+  (application:stop 'undermidi))
+
 (defun quit ()
   (log-info "Stopping OTP application ...")
   (application:stop 'undermidi)
@@ -34,6 +38,9 @@
 
 (defun example ()
   (undermidi.supervisor:example))
+
+(defun list-devices ()
+  (undermidi.supervisor:list-devices))
 
 (defun ping ()
   (undermidi.supervisor:ping))

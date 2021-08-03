@@ -36,7 +36,7 @@
 
 (defun initial-state ()
   `#m(opts ()
-      args ("-loglevel" "debug" "-daemon")
+      args ("-loglevel" "trace" "-daemon")
       binary ,(os:getenv "MIDISERVER")
       pid undefined
       os-pid undefined))
@@ -71,7 +71,25 @@
     `#(ok ,(maps:merge state start-state))))
 
 (defun handle_cast
-  ;; Go server commands
+  ;; Simple command (new format)
+  ((`(#(command ,cmd)) (= `#m(os-pid ,os-pid) state))
+   (let* ((cmd (erlang:term_to_binary `#(command ,cmd)))
+          (delim (DELIMITER))
+          (msg (binary (cmd binary) (delim binary)))
+          (hex-msg (binary ((undermidi.util:bin->hex cmd) binary) (delim binary))))
+     (log-debug "Sending hex-msg: ~p ..." (list hex-msg))
+     (exec:send os-pid hex-msg)
+     `#(noreply ,state)))
+  ;; Command with args
+  (((= `(#(command ,_) #(args ,_)) cmd) (= `#m(os-pid ,os-pid) state))
+   (let* ((cmd (erlang:term_to_binary cmd))
+          (delim (DELIMITER))
+          (msg (binary (cmd binary) (delim binary)))
+          (hex-msg (binary ((undermidi.util:bin->hex cmd) binary) (delim binary))))
+     (log-debug "Sending hex-msg: ~p ..." (list hex-msg))
+     (exec:send os-pid hex-msg)
+     `#(noreply ,state)))
+  ;; Go server commands - old format, still used by port go server
   (((= `#(command ,_) cmd) (= `#m(os-pid ,os-pid) state))
    (let* ((cmd (erlang:term_to_binary cmd))
           (delim (DELIMITER))
@@ -80,7 +98,8 @@
      (log-debug "Sending hex-msg: ~p ..." (list hex-msg))
      (exec:send os-pid hex-msg)
      `#(noreply ,state)))
-  ((_msg state)
+  ((msg state)
+   (log-warn "Got undexected cast msg: ~p" (list msg))
    `#(noreply ,state)))
 
 (defun handle_call
