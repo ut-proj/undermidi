@@ -57,6 +57,28 @@ lfe> (undermidi:example)
 ok
 ```
 
+## Macros
+
+The `midi` and `send` macros are provided as a typing convenience for sending lots of MIDI data at once. These are probably most useful in the REPL:
+
+``` lisp
+lfe> (include-lib "undermidi/include/macros.lfe")
+|-- loaded include: macros --|
+lfe> (midi (midimsg:device 0)
+           (midimsg:meter 4 4)
+           (midimsg:tempo_bpm 68))
+#(midi
+  #(batch
+    (#(device 0)
+     #(meter (#(numerator 4) #(denominator 4)))
+     #(tempo_bpm 68))))
+lfe> (send (midimsg:device 0)
+           (midimsg:meter 4 4)
+           (midimsg:tempo_bpm 68)
+           (midimsg:note_on 24 80))
+lfe> (send (midimsg:note_off 24))
+```
+
 [//]: ---Named-Links---
 
 [logo]: priv/images/project-logo.png
