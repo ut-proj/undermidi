@@ -9,8 +9,9 @@
   (export
    (child-pid 0)
    (child-port 0)
-   (example 0)
+   (example 1)
    (list-devices 0)
+   (midi 1)
    (pid 0)
    (ping 0)
    (send 1)
@@ -57,14 +58,19 @@
 (defun child-port ()
   (call (go-server) 'port))
 
-(defun example ()
-  (send '(#(command example) #(args (#(channel 0)
-                                     #(device 0)
-                                     #(pitch 48)
-                                     #(duration 4))))))
+(defun example
+  ((`#m(device ,dev channel ,ch pitch ,p velocity ,v duration ,dur))
+   (send `(#(command example) #(args (#(device ,dev)
+                                      #(channel ,ch)
+                                      #(pitch ,p)
+                                      #(velocity ,v)
+                                      #(duration ,dur)))))))
 
 (defun list-devices ()
   (send #(command list-devices)))
+
+(defun midi (midi-data)
+  (send `#(midi ,midi-data)))
 
 (defun pid ()
   (erlang:whereis (MODULE)))

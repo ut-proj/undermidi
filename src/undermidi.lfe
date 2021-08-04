@@ -1,9 +1,11 @@
 (defmodule undermidi
   (export
-   (start 0))
+   (start 0)
+   (stop 0))
   (export
-   (example 0)
+   (example 0) (example 1)
    (list-devices 0)
+   (midi 1)
    (ping 0)
    (quit 0)
    (send 1)
@@ -37,10 +39,16 @@
 ;;; Aliases
 
 (defun example ()
-  (undermidi.supervisor:example))
+  (example #m(device 0 channel 0 pitch 48 velocity 100 duration 4)))
+
+(defun example (opts)
+  (undermidi.supervisor:example opts))
 
 (defun list-devices ()
   (undermidi.supervisor:list-devices))
+
+(defun midi (data)
+  (undermidi.supervisor:midi data))
 
 (defun ping ()
   (undermidi.supervisor:ping))
