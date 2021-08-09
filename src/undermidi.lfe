@@ -21,7 +21,8 @@
   (logger:set_primary_config #m(level all))
   (logjam:set-handler-from-config "config/sys.config")
   (log-notice "Starting undermidi ...")
-  (application:ensure_all_started 'undermidi))
+  (application:ensure_all_started 'undermidi)
+  (lfe_io:format "\nVersions:\n~p\n" (list (versions))))
 
 (defun stop ()
   (application:stop 'undermidi))
@@ -69,6 +70,7 @@
   (undermidi.supervisor:version))
 
 (defun versions ()
-  (let ((`#(result ,go-app-vsn) (version-midiserver)))
-    (++ (undermidi.util:versions)
-        `(#(midiserver ,go-app-vsn)))))
+  ;;  (let ((`#(result ,go-app-vsn) (version-midiserver)))
+  ;;    (++ (undermidi.util:versions)
+  ;;        `(#(midiserver ,go-app-vsn))))
+  (undermidi.util:versions))

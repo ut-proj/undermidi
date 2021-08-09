@@ -65,19 +65,16 @@ The `midi` and `send` macros are provided as a typing convenience for sending lo
 lfe> (include-lib "undermidi/include/macros.lfe")
 |-- loaded include: macros --|
 lfe> (midi (midimsg:device 0)
-           (midimsg:meter 4 4)
-           (midimsg:tempo_bpm 68))
+           (midimsg:channel 0))
 #(midi
   #(batch
-    (#(device 0)
-     #(meter (#(numerator 4) #(denominator 4)))
-     #(tempo_bpm 68))))
-lfe> (send (midimsg:device 0)
-           (midimsg:channel 0)
-           (midimsg:meter 6 8)
-           (midimsg:tempo_bpm 68)
-           (midimsg:note_on 24 80))
-lfe> (send (midimsg:note_off 24))
+    (#(device 0) 
+    #(channel 0))))
+lfe> (progn
+       (send (midimsg:device 0) (midimsg:channel 0))
+       (send (midimsg:note-on 24 80))
+       (timer:sleep 2000)
+       (send (midimsg:note-off 24)))
 ```
 
 [//]: ---Named-Links---
