@@ -59,7 +59,7 @@ ok
 
 ## Macros
 
-The `midi` and `send` macros are provided as a typing convenience for sending lots of MIDI data at once. These are probably most useful in the REPL:
+The `midi` macros is provided as a typing convenience for generating MIDI messages:
 
 ``` lisp
 lfe> (include-lib "undermidi/include/macros.lfe")
@@ -70,11 +70,20 @@ lfe> (midi (midimsg:device 0)
   #(batch
     (#(device 0) 
     #(channel 0))))
+```
+
+The `send` macro from the same include saves typing when sending many messages to the Go MIDI server. Additionally, macros for MIDI notes are provided via another include:
+
+``` lisp
+lfe> (include-lib "undermidi/include/notes.lfe")
+|-- loaded include: notes --|
+lfe> (set volume 40)
 lfe> (progn
-       (send (midimsg:device 0) (midimsg:channel 0))
-       (send (midimsg:note-on 24 80))
+       (send (midimsg:device 0)
+             (midimsg:channel 0))
+       (send (midimsg:note-on (Bb1) volume))
        (timer:sleep 2000)
-       (send (midimsg:note-off 24)))
+       (send (midimsg:note-off (Bb1))))
 ```
 
 [//]: ---Named-Links---
