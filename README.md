@@ -63,13 +63,39 @@ For actually using undermidi to generate music, the `um*` modules are used:
 
 ``` lisp
 lfe> (include-lib "undermidi/include/notes.lfe")
-lfe> (um:set-device 0)
-lfe> (um:set-channel 0)
-lfe> (set veloc 40)
-lfe> (set dur 4)
-lfe> (um:play-chord (list (Bb2) (F3) (Db4))
-                    veloc
-                    (* dur 1000))
+lfe> (progn
+       (um:set-device 0)
+       (um:set-channel 0)
+       (set bpm 66)
+       (set veloc 50)
+       (set dur (trunc (* 4 (/ 60 bpm) 1000)))
+       (set ch1 (list (Bb2) (F3) (Db4)))
+       (um:play-chord ch1 veloc dur))
+```
+
+A few more:
+
+``` lisp
+lfe> (progn
+      (set ch2 (list (Ab2) (F3) (C4)))
+      (set ch3 (list (Db2) (Db3) (Ab3)))
+      (set ch4 (list (Gb2) (Gb3) (Bb3)))
+      (set ch5 (list (C3) (Ab3) (Eb4)))
+      (set ch6 (list (Db3) (Ab3) (Eb4)))
+      (set ch7 (list (C3) (Ab3) (F4)))
+      (set ch8 (list (F2) (Db3) (Ab3)))
+      (set ch9 (list (Ab2) (F3) (C4)))
+      (set ch10 (list (Gb2) (Eb3) (Bb3)))
+      (set ch11 (list (Eb2) (Gb3) (C4)))
+      'ok)
+lfe> (list-comp ((<- ch (list ch1 ch2 ch3 ch4
+                              ch1 ch2 ch3 ch4
+                              ch1 ch5 ch6 ch7
+                              ch1 ch5 ch6 ch2
+                              ch1 ch8 ch4 ch9
+                              ch1 ch8 ch10 ch11)))
+       (um:play-chord ch veloc dur)
+       'ok)
 ```
 
 ## Macros
