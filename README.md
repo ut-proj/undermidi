@@ -86,6 +86,32 @@ lfe> (progn
        (send (midimsg:note-off (Bb1))))
 ```
 
+By default, batched messages sent to the MIDI server will be executed serially, in the order they are defined in the batch.
+
+To execute these in parallel, one must annotate the messages appropriately:
+
+``` lisp
+lfe> (midi-parallel (midimsg:note-on (Bb2) volume)
+                    (midimsg:note-on (F3) volume)
+                    (midimsg:note-on (Db4) volume))
+#(midi
+  #(batch
+    (#(id #B(1 5 108 38 116 193 73 249 156 64 81 98 200 199 193 170))
+     #(parallel? true)
+     #(messages
+       (#(note_on (#(pitch 46) #(velocity 40)))
+        #(note_on (#(pitch 53) #(velocity 40)))
+        #(note_on (#(pitch 61) #(velocity 40))))))))
+```
+
+You may send this message with either the `send-parallel` or the shorter `cast` macro:
+
+``` lisp
+lfe> (cast (midimsg:note-on (Bb2) volume)
+           (midimsg:note-on (F3) volume)
+           (midimsg:note-on (Db4) volume))
+```
+
 [//]: ---Named-Links---
 
 [logo]: priv/images/project-logo.png
