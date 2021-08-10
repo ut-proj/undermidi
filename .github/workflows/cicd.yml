@@ -30,7 +30,7 @@ jobs:
     - name: Check rebar3 Version
       run: rebar3 --version
     - name: Compile
-      run: rebar3 compile
+      run: DIAGNOSTIC=1 rebar3 compile
     - name: Xref Checks
       run: rebar3 xref
 #    - name: Dialyzer
