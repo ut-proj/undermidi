@@ -1,5 +1,6 @@
 (defmodule undermidi.util
   (export
+   (banner 0)
    (bin->hex 1)
    (create-port 2)
    (priv-dir 0)
@@ -92,3 +93,120 @@
     (lists:flatten
      (list-comp ((<- x (binary_to_list bin)))
        (io_lib:format "~2.16.0B" `(,x))))))
+
+(defun banner ()
+  "Colour sequence:
+   - A series of blues for the mushroom and spores
+   - The yellow 'welcome'
+   - 3 clumps of grass
+   - Top of the 'd'
+   - 1 clump of grass
+   - Top of the 't'
+   - 3 clumps of grass
+   - Top row of 'undertone'
+  "
+  (let ((prompt "lfe> ")
+        (data (binary_to_list (read-priv "text/banner.ascii")))
+        (lcyan "\e[1;36m")
+        (cyan "\e[36m")
+        (lblue "\e[1;34m")
+        (blue "\e[34m")
+        (lyellow "\e[1;33m")
+        (yellow "\e[33m")
+        (magenta "\e[35m")
+        (lgreen "\e[1;32m")
+        (green "\e[32m")
+        (white "\e[1;37m")
+        (lgrey "\e[37m")
+        (grey "\e[1;30m")
+        (end "\e[0m"))
+    ;; XXX using VERSION below (for latter replace) is a hack; should we
+    ;;     instead return this whole thing as a format template, with ~s
+    ;;     instead of VERSION?
+    (io_lib:format data `(,lcyan ,end
+                          ,blue  ,end
+                          ,lcyan ,end
+
+                          ,blue  ,end
+                          ,lblue ,end
+                          ,blue  ,end
+                          ,lblue ,end
+
+                          ,blue  ,end
+                          ,lblue ,end
+                          ,blue  ,end
+                          ,lblue ,end
+
+                          ,blue  ,end
+                          ,cyan  ,end
+                          ,blue  ,end
+                          ,lblue ,end
+                          ,blue  ,end
+
+                          ,blue  ,end
+                          ,cyan  ,end
+                          ,blue  ,end
+                          ,lblue ,end
+                          ,blue  ,end
+
+                          ,cyan  ,end
+                          ,blue  ,end
+                          ,lblue ,end
+                          ,blue  ,end
+
+                          ,cyan    ,end
+                          ,blue    ,end
+                          ,magenta ,end
+
+                          ,cyan  ,end
+
+                          ,green  ,end
+                          ,lgreen ,end
+                          ,green  ,end
+                          ,lgreen ,end
+                          ,cyan   ,end
+                          ,green  ,end
+                          ,lgreen ,end
+                          ,green  ,end
+
+                          ,white ,end
+
+                          ,green  ,end
+                          ,lgreen ,end
+                          ,green  ,end
+
+                          ,green  ,end
+
+                          ,green  ,end
+                          ,lgreen ,end
+                          ,green  ,end
+                          ,lgreen ,end
+                          ,green  ,end
+                          ,lgreen ,end
+                          ,green  ,end
+                          ,white ,end
+                          ,green  ,end
+
+                          ,white ,end
+                          ,lgrey ,end
+                          ,grey  ,end
+                          ,(++ lyellow (version 'undermidi) end)
+                          ,(++ "Docs: "
+                               lblue
+                               "https://cnbbooks.github.io/lfe-music-programming/"
+                               end
+                               "\n"
+                               "Bug report: "
+                               lblue
+                               "https://github.com/ut-proj/undermidi/issues/new"
+                               end)
+                          ,prompt))))
+
+(defun read-priv (priv-rel-path)
+  (case (file:read_file (priv-file priv-rel-path))
+    (`#(ok ,data) data)
+    (other other)))
+
+(defun priv-file (priv-rel-path)
+  (filename:join (code:priv_dir 'undermidi)
+                 priv-rel-path))

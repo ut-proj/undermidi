@@ -1,5 +1,6 @@
 (defmodule undermidi
   (export
+   (panic 0)
    (start 0)
    (stop 0))
   (export
@@ -18,6 +19,7 @@
 (include-lib "logjam/include/logjam.hrl")
 
 (defun start ()
+  (io:format "~s" (list (undermidi.util:banner)))
   (logger:set_primary_config #m(level all))
   (logjam:set-handler-from-config "config/sys.config")
   (log-notice "Starting undermidi ...")
@@ -36,6 +38,10 @@
   (timer:sleep 500)
   (log-notice "undertone shutdown complete")
   (init:stop))
+
+(defun panic ()
+  (stop)
+  (start))
 
 ;;; Aliases
 
