@@ -98,6 +98,8 @@ lfe> (list-comp ((<- ch (list ch1 ch2 ch3 ch4
        'ok)
 ```
 
+Fans of Max Richter will recognise this immediately :-)
+
 ## Macros
 
 The `midi` macros is provided as a typing convenience for generating MIDI messages:
