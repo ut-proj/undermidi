@@ -13,7 +13,9 @@
    (stop-port 0)
    (version 0)
    (version-midiserver 0)
-   (versions 0)))
+   (versions 0))
+  (export
+   (batch 1) (batch 2)))
 
 (include-lib "logjam/include/logjam.hrl")
 
@@ -74,3 +76,13 @@
   ;;    (++ (undermidi.util:versions)
   ;;        `(#(midiserver ,go-app-vsn))))
   (undermidi.util:versions))
+
+;; Messages
+
+(defun batch (msgs)
+  (midimsg:batch msgs))
+
+(defun batch (msgs parallel?)
+  (midimsg:batch msgs
+                 `(#(id ,(uuid:get_v4_urandom))
+                   #(parallel? ,parallel?))))
