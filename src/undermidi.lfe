@@ -36,7 +36,7 @@
   (log-info "Stopping exec process manager ...")
   (application:stop 'erlexec)
   (timer:sleep 500)
-  (log-notice "undertone shutdown complete")
+  (log-notice "undermidi shutdown complete")
   (init:stop))
 
 (defun panic ()
