@@ -39,7 +39,8 @@
     #(driver ,(erlang:system_info 'driver_version))))
 
 (defun versions ()
-  (lists:append `((,(version+name 'undermidi))
+  (lists:append `((,(version+name 'undermidi)
+                   ,(version+name 'midilib))
                   ,(versions-langs)
                   ,(versions-rebar)
                   (,(version-arch)))))
