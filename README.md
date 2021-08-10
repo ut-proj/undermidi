@@ -45,6 +45,8 @@ Depending upon the configured log level, you may see a fair amount of output, in
 
 ## API
 
+Various application-level functions (i.e., "admin stuff") is available in the `undermidi*` modules, e.g.:
+
 ```lisp
 lfe> (undermidi:ping)
 pong
@@ -57,13 +59,25 @@ lfe> (undermidi:example)
 ok
 ```
 
+For actually using undermidi to generate music, the `um*` modules are used:
+
+``` lisp
+lfe> (include-lib "undermidi/include/notes.lfe")
+lfe> (um:set-device 0)
+lfe> (um:set-channel 0)
+lfe> (set veloc 40)
+lfe> (set dur 4)
+lfe> (um:play-chord (list (Bb2) (F3) (Db4))
+                    veloc
+                    (* dur 1000))
+```
+
 ## Macros
 
 The `midi` macros is provided as a typing convenience for generating MIDI messages:
 
 ``` lisp
 lfe> (include-lib "undermidi/include/macros.lfe")
-|-- loaded include: macros --|
 lfe> (midi (midimsg:device 0)
            (midimsg:channel 0))
 #(midi
@@ -76,12 +90,11 @@ The `send` macro from the same include saves typing when sending many messages t
 
 ``` lisp
 lfe> (include-lib "undermidi/include/notes.lfe")
-|-- loaded include: notes --|
-lfe> (set volume 40)
+lfe> (set veloc 40)
 lfe> (progn
        (send (midimsg:device 0)
              (midimsg:channel 0))
-       (send (midimsg:note-on (Bb1) volume))
+       (send (midimsg:note-on (Bb1) veloc))
        (timer:sleep 2000)
        (send (midimsg:note-off (Bb1))))
 ```
@@ -91,9 +104,9 @@ By default, batched messages sent to the MIDI server will be executed serially, 
 To execute these in parallel, one must annotate the messages appropriately:
 
 ``` lisp
-lfe> (midi-parallel (midimsg:note-on (Bb2) volume)
-                    (midimsg:note-on (F3) volume)
-                    (midimsg:note-on (Db4) volume))
+lfe> (midi-parallel (midimsg:note-on (Bb2) veloc)
+                    (midimsg:note-on (F3) veloc)
+                    (midimsg:note-on (Db4) veloc))
 #(midi
   #(batch
     (#(id #B(1 5 108 38 116 193 73 249 156 64 81 98 200 199 193 170))
@@ -107,9 +120,14 @@ lfe> (midi-parallel (midimsg:note-on (Bb2) volume)
 You may send this message with either the `send-parallel` or the shorter `cast` macro:
 
 ``` lisp
-lfe> (cast (midimsg:note-on (Bb2) volume)
-           (midimsg:note-on (F3) volume)
-           (midimsg:note-on (Db4) volume))
+lfe> (progn 
+       (cast (midimsg:note-on (Bb2) volume)
+             (midimsg:note-on (F3) volume)
+             (midimsg:note-on (Db4) volume))
+       (timer:sleep 4000)
+       (cast (midimsg:note-off (Bb2))
+             (midimsg:note-off (F3))
+             (midimsg:note-off (Db4))))
 ```
 
 [//]: ---Named-Links---
