@@ -6,16 +6,16 @@
 
 (defmacro send body
   `(undermidi:send
-    (undermidi:batch (list ,@body))))
+    (undermidi.msg:batch (list ,@body))))
 
 (defmacro send-parallel body
   `(undermidi:send
-    (undermidi:batch (list ,@body) 'true)))
+    (undermidi.msg:batch (list ,@body) 'true)))
 
 ;; Same thing as send-parallel, easier to type
 (defmacro cast body
   `(undermidi:send
-    (undermidi:batch (list ,@body) 'true)))
+    (undermidi.msg:batch (list ,@body) 'true)))
 
 ;; This function is for display purposes when used in the REPL
 ;; and needs to be the last function in the include file.
