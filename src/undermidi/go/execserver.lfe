@@ -35,11 +35,12 @@
 (defun DELIMITER () #"\n")
 
 (defun initial-state ()
-  `#m(opts ()
-      args ("-loglevel" "trace" "-daemon")
-      binary ,(os:getenv "MIDISERVER")
-      pid undefined
-      os-pid undefined))
+  (let ((log-level (logjam:read-log-level "config/sys.config")))
+    `#m(opts ()
+        args ("-loglevel" ,(go-log-level log-level) "-daemon")
+        binary ,(os:getenv "MIDISERVER")
+        pid undefined
+        os-pid undefined)))
 
 (defun genserver-opts () '())
 (defun unknown-command (data)
@@ -251,7 +252,7 @@
     (_ 'true)))
 
 (defun ps-alive? (os-pid)
-  (has-str? (ps-pid os-pid) (integer_to_list os-pid))) ;
+  (has-str? (ps-pid os-pid) (integer_to_list os-pid)))
 
 (defun ps-pid (pid-str)
   (os:cmd (++ "ps -o pid -p" pid-str)))
@@ -274,3 +275,11 @@
          (hex-msg (binary ((undermidi.util:bin->hex bin) binary) (delim binary))))
     (log-debug "Created hex msg: ~p" (list hex-msg))
     hex-msg))
+
+(defun go-log-level (lfe-level)
+  (case lfe-level
+    ("all" "trace")
+    ("notice" "info")
+    ("warning" "warning")
+    ("error" "error")
+    (_ "fatal")))

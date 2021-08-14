@@ -143,12 +143,13 @@ You can do more than that at once, however you may experience MIDI or timing jit
 
 ``` lisp
 (progn
+  (timer:sleep 1500)
   (um:set-cc (filter-cutoff-frequency) 16)
   (um:cycle-cc (filter-cutoff-frequency) 16 70 68)
-  (um:cycle-cc (osc-1-volume) 127 64 68)
-  (um:cycle-cc (osc-2-volume) 127 32 40)
-  (um:cycle-cc (osc-3-volume) 127 16 20)
-  (um:cycle-cc (noise-volume) 0 28 45)
+  (um:cycle-cc (filter-emphasis) 0 58 68)
+  (um:cycle-cc (osc-3-volume) 127 16 10)
+  (um:cycle-cc (noise-volume) 0 28 20)
+  (timer:sleep 500)
   (um:play-notes all velocity dur))
 ```
 
