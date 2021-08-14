@@ -59,17 +59,18 @@ lfe> (undermidi:example)
 ok
 ```
 
-For actually using undermidi to generate music, the `um*` modules are used. Here's how to set up for playing a chord:
+For actually using undermidi to generate music, the `um*` modules are used. Here's how to set up for playing a chord (this was created for a sampled MIDI piano on the OS' MIDI channel 1, which maps to the MIDI server's channel 0) :
 
 ``` lisp
-lfe> (include-lib "undermidi/include/notes.lfe")
 lfe> (progn
        (um:set-device 0)
        (um:set-channel 0)
        (set bpm 66)
        (set veloc 30)
-       (set dur (trunc (* 4 (/ 60 bpm) 1000)))
-       (set ch1 (list (Bb2) (F3) (Db4)))
+       (set pedal-gap 500)
+       (set dur (trunc (- (* 4 (/ 60 bpm) 1000) pedal-gap)))
+       (set ch1 '(Bb2 F3 Db4))
+       (um:soft-pedal-on)
        (um:play-chord ch1 veloc dur))
 ```
 
@@ -77,16 +78,16 @@ And a few more chords ;-)
 
 ``` lisp
 lfe> (progn
-       (set ch2 (list (Ab2) (F3) (C4)))
-       (set ch3 (list (Db2) (Db3) (Ab3)))
-       (set ch4 (list (Gb2) (Gb3) (Bb3)))
-       (set ch5 (list (C3) (Ab3) (Eb4)))
-       (set ch6 (list (Db3) (Ab3) (Eb4)))
-       (set ch7 (list (C3) (Ab3) (F4)))
-       (set ch8 (list (F2) (Db3) (Ab3)))
-       (set ch9 (list (Ab2) (F3) (C4)))
-       (set ch10 (list (Gb2) (Eb3) (Bb3)))
-       (set ch11 (list (Eb2) (Gb3) (C4)))
+       (set ch2 '(Ab2 F3 C4))
+       (set ch3 '(Db2 Db3 Ab3))
+       (set ch4 '(Gb2 Gb3 Bb3))
+       (set ch5 '(C3 Ab3 Eb4))
+       (set ch6 '(Db3 Ab3 Eb4))
+       (set ch7 '(C3 Ab3 F4))
+       (set ch8 '(F2 Db3 Ab3))
+       (set ch9 '(Ab2 F3 C4))
+       (set ch10 '(Gb2 Eb3 Bb3))
+       (set ch11 '(Eb2 Gb3 C4))
        'ok)
 lfe> (list-comp ((<- ch (list ch1 ch2 ch3 ch4
                               ch1 ch2 ch3 ch4
@@ -94,9 +95,61 @@ lfe> (list-comp ((<- ch (list ch1 ch2 ch3 ch4
                               ch1 ch5 ch6 ch2
                               ch1 ch8 ch4 ch9
                               ch1 ch8 ch10 ch11)))
-       (let ((veloc (+ veloc (trunc (* 5 (- 5 (* 8 (rand:uniform))))))))
+       ;; tweak the velocity for some dynamics
+       (let ((veloc (+ veloc (trunc (* 3 (- 3 (* 8 (rand:uniform))))))))
+         (um:sustain-pedal-off)
+         (timer:sleep pedal-gap)
+         (um:sustain-pedal-on)
          (um:play-chord ch veloc dur)
          'ok))
+lfe> (progn
+       (um:sustain-pedal-off)
+       (um:soft-pedal-off)
+       'ok)
+```
+
+In addition to notes, undermidi can control the knobs on a synthesizer via MIDI CC messages.
+Here's a setup for the Minimoog in the Luna DAW (for Tangerine Dream fans):
+
+``` lisp
+lfe> (include-lib "undermidi/include/luna/minimoog.lfe")
+
+lfe> (progn
+       (um:set-device 0)
+       (um:set-channel 0)
+
+       (set velocity 80)
+       (set bpm 250)
+       (set dur (trunc (* (/ 60 bpm) 1000)))
+       (set pat1 '(C4 C4 Bb3 G3))
+       (set pat2 '(C4 C4 C4 Bb3 G3))
+       (set pat3 '(C4 C4 C4 C4 Bb3 G3))
+       (set pat4 '(C4 C3 C4 C4 Bb3 G3))
+       (set pat5 '(C4 C3 C4 C3 Bb3 G3))
+
+       (set seq1 (undermidi.util:dupe-notes pat1 15))
+       (set seq2 (undermidi.util:dupe-notes pat2 12))
+       (set seq3 (undermidi.util:dupe-notes pat3 10))
+       (set seq4 (undermidi.util:dupe-notes pat4 10))
+       (set seq5 (undermidi.util:dupe-notes pat5 10))
+
+       (set all (lists:append (list seq1 seq2 seq3 seq4 seq5)))
+       (um:set-cc (filter-cutoff-frequency) 16)
+       (um:cycle-cc (filter-cutoff-frequency) 16 70 68)
+       (um:play-notes all velocity dur))
+```
+
+You can do more than that at once, however you may experience MIDI or timing jitter (that will go away once the beat tracking is implemented). If you'd like to experiment with more, try this (using the same notes as above):
+
+``` lisp
+(progn
+  (um:set-cc (filter-cutoff-frequency) 16)
+  (um:cycle-cc (filter-cutoff-frequency) 16 70 68)
+  (um:cycle-cc (osc-1-volume) 127 64 68)
+  (um:cycle-cc (osc-2-volume) 127 32 40)
+  (um:cycle-cc (osc-3-volume) 127 16 20)
+  (um:cycle-cc (noise-volume) 0 28 45)
+  (um:play-notes all velocity dur))
 ```
 
 Fans of Max Richter will recognise this immediately :-)

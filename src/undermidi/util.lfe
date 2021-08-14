@@ -3,8 +3,10 @@
    (banner 0)
    (bin->hex 1)
    (create-port 2)
+   (dupe-notes 2)
    (priv-dir 0)
    (receive-line 2)
+   (seq 2)
    (version 0)
    (versions 0)))
 
@@ -210,3 +212,12 @@
 (defun priv-file (priv-rel-path)
   (filename:join (code:priv_dir 'undermidi)
                  priv-rel-path))
+
+(defun seq (start end)
+  (if (> end start)
+    (lists:seq start end)
+    (lists:reverse (lists:seq end start))))
+
+(defun dupe-notes (notes times)
+  (lists:flatten
+   (lists:duplicate times notes)))
