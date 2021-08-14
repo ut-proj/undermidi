@@ -84,6 +84,7 @@
      `#(noreply ,state)))
   ;; MIDI data
   (((= `#(midi ,_) midi) (= `#m(os-pid ,os-pid) state))
+   (log-debug "Sending MIDI message: ~s" `(,(lfe_io_format:fwrite1 "~p" `(,midi))))
    (let ((hex-msg (hex-encode midi)))
      (exec:send os-pid hex-msg)
      `#(noreply ,state)))
@@ -278,8 +279,10 @@
 
 (defun go-log-level (lfe-level)
   (case lfe-level
-    ("all" "trace")
-    ("notice" "info")
-    ("warning" "warning")
-    ("error" "error")
+    ('all "trace")
+    ('debug "debug")
+    ('info "info")
+    ('notice "warning")
+    ('warning "warning")
+    ('error "error")
     (_ "fatal")))
