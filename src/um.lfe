@@ -93,6 +93,14 @@
     (play-note note-name velocity duration))
   'ok)
 
+(defun play-pitch (pitch velocity)
+  (undermidi:send (midimsg:note-on pitch velocity)))
+
+(defun play-pitch (pitch velocity duration)
+  (undermidi:send (midimsg:note-on pitch velocity))
+  (timer:sleep duration)
+  (undermidi:send (midimsg:note-off pitch)))
+
 (defun sched-cc
   ((value (= `#m(con ,controller incr ,incr acc ,acc) data))
    (let* ((sum (+ acc incr))
@@ -146,3 +154,9 @@
 
 (defun set-channel (int)
   (undermidi:send (midimsg:channel int)))
+
+(defun octave
+  ((note-name oct) (when (is_atom note-name))
+   (octave (get-pitch note-name oct)))
+  ((pitch oct)
+   (+ pitch (* 12 oct))))
