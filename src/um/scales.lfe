@@ -4,11 +4,13 @@
 (defun chromatic ()
   '(1 b2 2 b3 3 4 b5 5 b6 6 b7 7))
 
-(defun major ()
-  '(1 2 3 4 5 6 7))
+;;; Diatonic Scales
 
 (defun ionian ()
-  (major))
+  '(1 2 3 4 5 6 7))
+
+(defun major ()
+  (ionian))
 
 (defun dorian ()
   '(1 2 b3 4 5 6 b7))
@@ -19,7 +21,7 @@
 (defun phrygian-dominant ()
   '(1 b2 3 4 5 b6 b7))
 
-(defun gypsy-scale ()
+(defun gypsy ()
   (phrygian-dominant))
 
 (defun lydian ()
@@ -34,14 +36,51 @@
 (defun mixolydian ()
   '(1 2 3 4 5 6 b7))
 
-(defun natural-minor ()
+(defun aeolian ()
   '(1 2 b3 4 5 b6 b7))
+
+(defun natural-minor ()
+  (aeolian))
+
+(defun harmonic-minor ()
+  '(1 2 b3 4 5 b6 7))
+
+(defun melodic-minor-asc ()
+  '(1 2 b3 4 5 6 7))
+
+(defun melodic-minor-desc ()
+  '(1 2 b3 4 5 b6 b7))
+
+(defun locrian ()
+  '(1 b2 b3 4 b5 b6 b7))
+
+;;; Pentatonic Scales
 
 (defun major-pentatonic ()
   '(1 2 3 5 6))
 
+(defun blues-major ()
+  '(1 2 4 5 6))
+
 (defun minor-pentatonic ()
-  '(1 2 3 5 6))
+  '(1 b3 4 5 b7))
+
+(defun blues-minor ()
+  '(1 b3 4 b6 b7))
+
+(defun man-gong ()
+  (blues-minor))
+
+(defun relative-minor-pentatonic ()
+  '(1 3 4 5 7))
+
+(defun japanese ()
+  '(1 2 4 5 6))
+
+(defun suspended-egyptian ()
+  '(1 2 4 5 b7)
+
+;;; Utilty Functions
 
 (defun ->pitch
     ((1) 0)
