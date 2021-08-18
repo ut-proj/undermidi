@@ -157,6 +157,6 @@
 
 (defun octave
   ((note-name oct) (when (is_atom note-name))
-   (octave (get-pitch note-name oct)))
+   (octave (get-pitch note-name) oct))
   ((pitch oct)
    (+ pitch (* 12 oct))))
