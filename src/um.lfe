@@ -7,6 +7,7 @@
    (play-chord 2) (play-chord 3)
    (play-note 1) (play-note 2) (play-note 3)
    (play-notes 1) (play-notes 3)
+   (play-pitch 2) (play-pitch 3)
    (ramp-cc 4)
    (set-cc 2)
    (set-channel 1)
