@@ -138,3 +138,14 @@
 (defun midi (scale)
   (list-comp ((<- s scale))
     (->pitch s)))
+
+(defun get (scale-name start-oct oct-count)
+  (let ((scale (midi
+                (erlang:apply 'um.scale scale-name '())))
+        (last-oct (- (+ start-oct oct-count) 1)))
+    (lists:flatten
+     (list
+      (list-comp ((<- oct (lists:seq start-oct last-oct)))
+        (list-comp ((<- x scale))
+          (um:octave x oct)))
+      (um:octave (car scale) (+ 1 last-oct))))))
