@@ -78,7 +78,21 @@
   '(1 2 4 5 6))
 
 (defun suspended-egyptian ()
-  '(1 2 4 5 b7)
+  '(1 2 4 5 b7))
+
+;;; Hexatonic Scales
+
+(defun whole-tone ()
+  '(1 2 3 |#4| |#5| |#6|))
+
+(defun symmetrical-augmented ()
+  '(1 b3 3 5 |#5| 7))
+
+(defun prometheus ()
+  '(1 2 3 |#4| 6 b7))
+
+(defun tritone ()
+  '(1 b2 3 b5 5 b7))
 
 ;;; Utilty Functions
 
