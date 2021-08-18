@@ -4,6 +4,7 @@
    (chord 1) (chord 2)
    (cycle-cc 4)
    (get-pitch 1)
+   (octave 2)
    (play-chord 2) (play-chord 3)
    (play-note 1) (play-note 2) (play-note 3)
    (play-notes 1) (play-notes 3)

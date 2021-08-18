@@ -16,3 +16,9 @@
 (defun play
   (('piano velocity duration)
    (um:play-pitch (piano) velocity duration)))
+
+(defun shuffle (items)
+  (list-comp ((<- `#(,_ ,n) (lists:sort
+                             (list-comp ((<- m items))
+                               `#(,(rand:uniform) ,m)))))
+    n))
