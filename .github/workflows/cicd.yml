@@ -7,8 +7,8 @@ on:
   pull_request:
     branches: [ main, 'release/**', 'task/**', 'feature/**', 'epic/**']
   # Build once a month, just to be sure things are still working
-  schedule:
-  - cron: "20 4 27 * *"
+  #schedule:
+  #- cron: "20 4 27 * *"
 
 jobs:
 
