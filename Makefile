@@ -16,7 +16,17 @@ rebuild: clean-all build
 show-arch-bin:
 	@echo $(DOWNLOAD_BIN)
 
+check:
+	-@rebar3 lfe clean
+	@rebar3 lfe compile
+	@rebar3 xref
+	-@rebar3 dialyzer
+	@rebar3 as test lfe ltest
+
+recheck: rebuild check
+
 clean-all: clean-go clean
+	@rm -rf _build rebar.lock
 
 .PHONY: default run build build-go clean-go clean-all
 
