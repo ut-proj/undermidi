@@ -17,7 +17,8 @@
 (defun initial-state ()
   `#m(name liveplay
       table-name ,(table-name)
-      table-desc ,(table-desc)))
+      table-desc ,(table-desc)
+      controlling-process ,(MODULE)))
 (defun genserver-opts () '())
 (defun unknown-command (data)
   `#(error ,(lists:flatten (++ "Unknown command: " data))))
@@ -27,7 +28,7 @@
 ;;;;;::=-----------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun start_link ()
-  (log-info "Starting undertone Extempore REPL server ...")
+  (log-info "Starting undermidi Liveplay server ...")
   (gen_server:start_link `#(local ,(SERVER))
                          (MODULE)
                          (initial-state)
@@ -43,7 +44,7 @@
 (defun init
   (((= `#m(table-name ,table-name) state))
    (ets:new table-name (table-options))
-   (log-debug (table-info table-name))
+   (log-debug (undermidi.util:table-info table-name))
    `#(ok ,state)))
 
 (defun handle_cast
@@ -57,7 +58,7 @@
    `#(reply tbd ,state))
   ;; Metadata
   ((#(table-info) _from state)
-   `#(reply ,(table-info state) ,state))
+   `#(reply ,(undermidi.util:table-info state) ,state))
   ;; Stop
   (('stop _from (= `#m(session ,sess) state))
    (ets:delete (mref sess 'table))
@@ -127,9 +128,3 @@
 ;;;::=-   utility / support functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=-------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun table-info
-  ((`#m(table-name ,table-name table-desc ,table-desc))
-   (maps:merge `#m(controlling-process ,(MODULE)
-                   name ,table-name
-                   description ,table-desc)
-               (maps:from_list (ets:info table-name)))))

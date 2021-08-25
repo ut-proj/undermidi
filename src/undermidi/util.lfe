@@ -7,6 +7,7 @@
    (priv-dir 0)
    (receive-line 2)
    (seq 2)
+   (table-info 1)
    (version 0)
    (versions 0)))
 
@@ -221,3 +222,12 @@
 (defun dupe-notes (notes times)
   (lists:flatten
    (lists:duplicate times notes)))
+
+(defun table-info
+  ((`#m(table-name ,table-name
+        table-desc ,table-desc
+        controlling-process ,controlling-process))
+   (maps:merge `#m(controlling-process ,controlling-process
+                   name ,table-name
+                   description ,table-desc)
+               (maps:from_list (ets:info table-name)))))
