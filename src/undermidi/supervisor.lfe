@@ -26,6 +26,7 @@
 ;;(defun go-server () 'undermidi.go.portserver)
 (defun go-server () 'undermidi.go.execserver)
 (defun liveplay () 'undermidi.liveplay)
+(defun beatracker () 'undermidi.beatracker)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   OTP Supervisor   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -47,8 +48,9 @@
   `#(ok #(#m(strategy one_for_one
              intensity 3
 	           period 60)
-          (,(child (go-server))
-           ,(child (liveplay))))))
+            (,(child (go-server))
+             ,(child (liveplay))
+             ,(child (beatracker))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
