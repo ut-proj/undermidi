@@ -7,16 +7,12 @@
   ((chord key)
    (um:template->pitches chord key)))
 
-;; XXX generalise create/3 and create/4 here and in um.scale ...
-(defun create (chord start-oct oct-count)
-  (create chord start-oct oct-count 0))
+(defun create (chord oct)
+  (create chord oct 0))
 
-(defun create (chord start-oct oct-count key)
-  (let ((midi-notes (pitches chord key))
-        (last-oct (- (+ start-oct oct-count) 1)))
+(defun create (chord oct key)
+  (let ((midi-notes (pitches chord key)))
      (lists:flatten
       (list
-       (list-comp ((<- oct (lists:seq start-oct last-oct)))
          (list-comp ((<- pitch midi-notes))
-           (um:octave pitch oct)))
-       (um:octave (car chord) (+ 1 last-oct))))))
+           (um:octave pitch oct))))))
