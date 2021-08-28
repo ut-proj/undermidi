@@ -1,17 +1,11 @@
 (defmodule um.scale
   (export all))
 
-(defun pitches (scale)
-  (pitches scale 0))
-
 (defun pitches
-  ((scale key) (when (is_atom key))
-   (pitches scale (mref (um.notes:all) key)))
   ((scale-name key) (when (is_atom scale-name))
    (pitches (erlang:apply 'uth.scale scale-name '()) key))
   ((scale key)
-   (list-comp ((<- s scale))
-     (+ (um:template->pitch s) key))))
+   (um:template->pitches scale key)))
 
 (defun create (scale start-oct oct-count)
   (create scale start-oct oct-count 0))
