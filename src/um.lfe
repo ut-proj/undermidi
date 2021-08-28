@@ -17,7 +17,9 @@
    (soft-pedal-on 0)
    (stop-note 1)
    (sustain-pedal-off 0)
-   (sustain-pedal-on 0)))
+   (sustain-pedal-on 0)
+   (template->pitch 1)
+   (template->pitches 1) (template->pitches 2)))
 
 (include-lib "undermidi/include/notes.lfe")
 
