@@ -227,3 +227,13 @@
   ((13) 22)
   (('|#13|) 23)
   (('|##13|) 24))
+
+(defun template->pitches (template)
+  (template->pitches template 0))
+
+(defun template->pitches
+  ((template key) (when (is_atom key))
+   (template->pitches template (mref (um.notes:all) key)))
+  ((template key)
+   (list-comp ((<- note template))
+     (+ (template->pitch note) key))))
