@@ -45,20 +45,6 @@ Depending upon the configured log level, you may see a fair amount of output, in
 
 ## API
 
-Various application-level functions (i.e., "admin stuff") is available in the `undermidi*` modules, e.g.:
-
-```lisp
-lfe> (undermidi:ping)
-pong
-```
-
-Play the example MIDI code (requires the first MIDI device on your system, index 0, to be connected to a MIDI device, hardware or software, listening on channel 1):
-
-```lisp
-lfe> (undermidi:example)
-ok
-```
-
 For actually using undermidi to generate music, the `um*` modules are used. Here's how to set up for playing a chord (this was created for a sampled MIDI piano on the OS' MIDI channel 1, which maps to the MIDI server's channel 0) :
 
 ``` lisp
@@ -89,24 +75,25 @@ lfe> (progn
        (set ch10 '(Gb2 Eb3 Bb3))
        (set ch11 '(Eb2 Gb3 C4))
        'ok)
-lfe> (list-comp ((<- ch (list ch1 ch2 ch3 ch4
-                              ch1 ch2 ch3 ch4
-                              ch1 ch5 ch6 ch7
-                              ch1 ch5 ch6 ch2
-                              ch1 ch8 ch4 ch9
-                              ch1 ch8 ch10 ch11)))
-       ;; tweak the velocity for some dynamics
-       (let ((veloc (+ veloc (trunc (* 3 (- 3 (* 8 (rand:uniform))))))))
-         (um:sustain-pedal-off)
-         (timer:sleep pedal-gap)
-         (um:sustain-pedal-on)
-         (um:play-chord ch veloc dur)
-         'ok))
 lfe> (progn
+       (list-comp ((<- ch (list ch1 ch2 ch3 ch4
+                                ch1 ch2 ch3 ch4
+                                ch1 ch5 ch6 ch7
+                                ch1 ch5 ch6 ch2
+                                ch1 ch8 ch4 ch9
+                                ch1 ch8 ch10 ch11)))
+         ;; tweak the velocity for some dynamics
+         (let ((veloc (+ veloc (trunc (* 3 (- 3 (* 8 (rand:uniform))))))))
+           (um:sustain-pedal-off)
+           (timer:sleep pedal-gap)
+           (um:sustain-pedal-on)
+           (um:play-chord ch veloc dur)))
        (um:sustain-pedal-off)
        (um:soft-pedal-off)
        'ok)
 ```
+
+Fans of Max Richter will recognise this immediately :-)
 
 In addition to notes, undermidi can control the knobs on a synthesizer via MIDI CC messages.
 Here's a setup for the Minimoog in the Luna DAW (for Tangerine Dream fans):
@@ -153,7 +140,23 @@ You can do more than that at once, however you may experience MIDI or timing jit
   (um:play-notes all velocity dur))
 ```
 
-Fans of Max Richter will recognise this immediately :-)
+
+### Testing / Debugging
+
+Various application-level functions (i.e., "admin stuff") is available in the `undermidi*` modules, e.g.:
+
+```lisp
+lfe> (undermidi:ping)
+pong
+```
+
+Play the example MIDI code (requires the first MIDI device on your system, index 0, to be connected to a MIDI device, hardware or software, listening on channel 1):
+
+```lisp
+lfe> (undermidi:example)
+ok
+```
+
 
 ## Macros
 
