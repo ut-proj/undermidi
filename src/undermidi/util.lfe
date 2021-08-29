@@ -44,6 +44,7 @@
 
 (defun versions ()
   (lists:append `((,(version+name 'undermidi)
+                   ,(version+name 'undertheory)
                    ,(version+name 'midilib))
                   ,(versions-langs)
                   ,(versions-rebar)
