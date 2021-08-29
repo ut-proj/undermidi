@@ -41,11 +41,20 @@ For Mac users, if you don't see any output, then you'll want to open `Applicatio
 
 ### Garage Band
 
-Start up GarageBand, create a new empty project, add a new instrument track when prompted, accepting all the defaults. 
+On Mac OS X, probably the fastest, cheapest way to get set up with MIDI-capable sound is with GarageBand.
+
+Steps:
+
+* Start up GarageBand
+* Create a new empty project
+* When prompted, add a new instrument track
+* The default is electric piano, but you can easily switch that to any other instrument you may prefer.
 
 ## Making Sounds
 
-TBD
+Keeping GarageBand open, switch to a terminal window open to the directory where you cloned `undermidi`.
+
+You can now follow the instructions given in the project [README.md](https://github.com/ut-proj/undermidi#api), e.g., the Max Richter example.
 
 ## Bonus
 
