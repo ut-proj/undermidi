@@ -39,7 +39,9 @@ For Mac users, if you don't see any output, then you'll want to open `Applicatio
 
 ## Adding a Software MIDI Device
 
-TBD
+### Garage Band
+
+Start up GarageBand, create a new empty project, add a new instrument track when prompted, accepting all the defaults. 
 
 ## Making Sounds
 
@@ -49,13 +51,20 @@ TBD
 
 TBD
 
-### VST Plugins+MIDI for Beautiful/Free Sampled Instruments
+### Plugins + MIDI for Beautiful/Free Sampled Instruments
 
-TBD
+#### Free Plugin Host for Mac: AU Lab
 
-### Setting Up a VST 
+You can download it [here](https://www.apple.com/apple-music/apple-digital-masters/). For it to be useful, though, you will need to download AU plugins. Fortunately, most plugins are offered in this format as well as VST format.
 
-TBD
+### Plugins
+
+A small list of free but excellent VST/AU plugins ...
+
+* Modern synth: [Surge](https://surge-synthesizer.github.io/)
+* Classic 80s synth: [OB-Xd](https://www.discodsp.com/obxd/)
+* Classic 70s synth: [KORG FB-3300](https://www.fullbucket.de/music/fb3300.html)
+
 
 ### Making Beautiful Music
 
@@ -63,4 +72,11 @@ TBD
 
 ### Non-Free Recommendations
 
-TBD
+* Modern synth: [SynthMaster]()
+* Classic 60s-70s synth: [Moog modular V]() (System 55 emulation)
+* Sampled piano
+  * bright: []()
+  * dark: []()
+* Reverb
+  * room: []()
+  * vintage: []()
