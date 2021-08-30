@@ -4,7 +4,7 @@ This mini-guide is provided to help developers get `undermidi` up and running as
 
 ## Overview
 
-* Erlang, rebar3, undermidi, midiserver
+* git, Erlang, rebar3, undermidi, midiserver
 * System MIDI
 * Adding a Software MIDI Device
 * Making Sounds
@@ -16,7 +16,20 @@ This mini-guide is provided to help developers get `undermidi` up and running as
   
 ## Project Dependencies
 
+The installation of git, Erlang, and rebar3 won't be covered here -- lots of great resources for those, all easily searchable. Right now, the best way to work with undermidi is to simply clone it:
+
+``` shell
+$ git clone git@github.com:ut-proj/undermidi.git
+$ cd undermidi
+```
+
+A `Makefile` target is provided to download the Erlang Ports/Go `midiserver` to the location expected by `undermidi`:
+
+``` shell
 TBD
+```
+
+Once that's done, you have the software dependencies in place and are ready setup MIDI for your OS.
 
 ## System MIDI
 
@@ -37,7 +50,9 @@ MIDI OUT Ports:
 
 For Mac users, if you don't see any output, then you'll want to open `Applications -> Utilities -> Audio MIDI Setup` and then from the `Window` menu, select `Show MIDI Studio`. Once that window is displayed, you'll want to check the box "Device is online" (should be under the "Model" dropdown). Once checked, re-run the `midiserver -list` command, and you should see the expected output.
 
-## Adding a Software MIDI Device
+TODO: add notes for Linux
+
+## Adding a Software MIDI Device (Mac)
 
 ### Garage Band
 
