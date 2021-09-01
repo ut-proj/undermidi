@@ -5,15 +5,15 @@
 After you've downloaded `midiserver` and set the executable bit, run it with these options to see your current system MIDI devices:
 
 ```shell
-$ /path/to/midiserver -list
+$ /path/to/midiserver list-devices
 ```
 
-At the very least -- on macos --, you should see something like this:
+At the very least -- on macos -- you should see something like this:
 
 ```
-MIDI IN Ports:
+MIDI IN devices:
 	[0] IAC Driver Bus 1
-MIDI OUT Ports:
+MIDI OUT devices:
 	[0] IAC Driver Bus 1
 ```
 
