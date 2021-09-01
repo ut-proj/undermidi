@@ -2,6 +2,24 @@
 
 ## System MIDI
 
+You will need to have the `` header files installed, since this is used by `midiserver` (dynamically linked):
+
+``` shell
+$ sudo apt-get install -y libasound2-dev
+```
+
+Additionally, there are some tools and libaries that will be good to have for verious tasks. Those may be installed with the following:
+
+``` shell
+$ sudo apt-get install -y \
+	alsa-utils \
+	libasound2 \
+	libasound2-plugins \
+	pulseaudio \
+	pulseaudio-utils \
+	--no-install-recommends \
+```
+
 After you've downloaded `midiserver` and set the executable bit, run it with these options to see your current system MIDI devices:
 
 ```shell
