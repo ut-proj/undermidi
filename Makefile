@@ -41,12 +41,12 @@ clean:
 ###   Go Targets   ##########################################################
 #############################################################################
 
-GH_ORG = github.com/geomyidia
-GO_PROJ = erl-midi-server
+GH_ORG = github.com/ut-proj
+GO_PROJ = midiserver
 GO_REPO = https://$(GH_ORG)/$(GO_PROJ).git
 GO_BASE = $(PRIV)/go/src/$(GH_ORG)
 GO_DIR = $(GO_BASE)/$(GO_PROJ)
-GO_SRC = ~/lab/geomyidia/src/$(GH_ORG)/$(GO_PROJ)
+GO_SRC = ~/lab/ut-proj/go/src/$(GH_ORG)/$(GO_PROJ)
 
 $(GO_DIR):
 	@mkdir -p $(GO_BASE)
@@ -60,3 +60,5 @@ build-go: | $(GO_DIR)
 
 clean-go:
 	@cd $(GO_DIR) && $(MAKE) clean
+
+rebuild-go: clean-go build-go
