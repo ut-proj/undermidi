@@ -63,8 +63,7 @@ GO_SRC = ~/lab/ut-proj/go/src/$(GH_ORG)/$(GO_PROJ)
 $(GO_DIR):
 	@mkdir -p $(GO_BASE)
 	@cd $(GO_BASE) && \
-	ln -s $(GO_SRC) . && \
-	touch go
+	git clone $(GO_REPO)
 
 build-go: | $(GO_DIR)
 	@echo ">> Building Go examples ..."
