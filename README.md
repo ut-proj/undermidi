@@ -16,7 +16,17 @@ This application assumes that the following are on your system:
 * GNU `make`
 * A modern install of Erlang (v20+)
 * [rebar3](https://www.rebar3.org/) (Erlang build tool)
+
+If you would like to (or need to) build the Golang `midiserver` binary yourself,
+You'll need the following
 * Golang
+* header files from `libasound2-dev` (if you're compiling on Linux)
+
+You can then run `make build`.
+
+If you would like to download [one of the binaries](https://github.com/ut-proj/midiserver/releases)
+instead, you can run `make download`.
+
 
 This project's `rebar.config.script` will set the required Go environment
 variables.
@@ -26,16 +36,22 @@ variables.
 Build the required Go MIDI server and compile the LFE:
 
 ```shell
-$ make clean && make
+$ rebar3 compile
 ```
 
-Start up the LFE REPL:
+If you're using the downloaded binary, you don't need anything special, just run the usual:
 
 ``` shell
 $ rebar3 lfe repl
 ```
 
-Start the app:
+However, if you're building from source, you'll need to set an environment variable:
+
+``` shell
+$ USE_GO_SRC=true rebar3 lfe repl
+```
+
+Once the LFE REPL is ready, you can start the app:
 
 ```cl
 lfe> (undermidi:start)
