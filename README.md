@@ -22,14 +22,11 @@ You'll need the following
 * Golang
 * header files from `libasound2-dev` (if you're compiling on Linux)
 
-You can then run `make build`.
+You can then run `make build` (rhis project's `rebar.config.script` will set the required Go environment
+variables),
 
 If you would like to download [one of the binaries](https://github.com/ut-proj/midiserver/releases)
 instead, you can run `make download`.
-
-
-This project's `rebar.config.script` will set the required Go environment
-variables.
 
 ## Build & Run
 
