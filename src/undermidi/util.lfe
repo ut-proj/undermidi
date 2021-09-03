@@ -94,9 +94,12 @@
     (let ((mod 'binary)
           (func 'encode_hex))
       (call mod func bin))
-    (lists:flatten
-     (list-comp ((<- x (binary_to_list bin)))
-       (io_lib:format "~2.16.0B" `(,x))))))
+    (progn
+      (log-debug "Getting hex for: ~s" `(,(lfe_io_format:fwrite1 "~p" (list bin))))
+      (list_to_binary
+       (lists:flatten
+        (list-comp ((<- x (binary_to_list bin)))
+          (io_lib:format "~2.16.0B" `(,x))))))))
 
 (defun banner ()
   "Colour sequence:
