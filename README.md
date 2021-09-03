@@ -22,15 +22,25 @@ You'll need the following
 * Golang
 * header files from `libasound2-dev` (if you're compiling on Linux)
 
-You can then run `make build` (rhis project's `rebar.config.script` will set the required Go environment
-variables),
+You can then run:
+
+``` shell
+$ make build
+```
+
+(Note that this project's `rebar.config.script` will set the required Go environment
+variables.)
 
 If you would like to download [one of the binaries](https://github.com/ut-proj/midiserver/releases)
-instead, you can run `make download`.
+instead, you can run this instead:
+
+```shell
+$ make download
+```
 
 ## Build & Run
 
-Build the required Go MIDI server and compile the LFE:
+Once you've selected how pull in the Go `midiserver`, you can build and run the LFE code:
 
 ```shell
 $ rebar3 compile
