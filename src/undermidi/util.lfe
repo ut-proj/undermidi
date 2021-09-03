@@ -89,7 +89,7 @@
         bin))))
 
 (defun bin->hex (bin)
-  (if (>= 24 (list_to_integer (erlang:system_info 'otp_release)))
+  (if (>= (list_to_integer (erlang:system_info 'otp_release)) 24)
     ;; Can we get around the linter for older versions?
     (let ((mod 'binary)
           (func 'encode_hex))

@@ -3,6 +3,11 @@ PRIV = ./priv
 PWD = $(shell pwd)
 ARCH = $(shell uname -m)
 OS = $(shell uname -s|tr '[:upper:]' '[:lower:]')
+ifeq ($(OS),linux)
+  ifeq ($(ARCH),x86_64)
+    ARCH = amd64
+  endif
+endif
 MIDISERVER_VSN = 0.1.0
 MIDISERVER_REPO = https://github.com/ut-proj/midiserver
 BIN = midiserver
@@ -14,6 +19,9 @@ DOWNLOAD_LINK = $(MIDISERVER_REPO)/releases/download/$(MIDISERVER_VSN)/$(DOWNLOA
 #############################################################################
 
 default: build
+
+show-arch-bin:
+	@echo $(DOWNLOAD_BIN)
 
 build: build-go
 	@rebar3 compile
@@ -32,7 +40,7 @@ recheck: rebuild check
 clean-all: clean-go clean
 	@rm -rf _build rebar.lock
 
-.PHONY: default run build build-go clean-go clean-all
+.PHONY: default run build build-go clean-go clean-all download 
 
 #############################################################################
 ###   Erlang Targets   ######################################################
@@ -67,12 +75,13 @@ clean-go:
 
 rebuild-go: clean-go build-go
 
-download: bin/midiserver
+download: | bin/$(BIN)
 
-download-midiserver: bin/midiserver
-
-bin/midiserver:
-	@mkdir -p bin
+bin/$(BIN):
+	@mkdir -p ./bin
+	@echo ">> Downloading $(DOWNLOAD_LINK) ..."
 	@curl -L --silent -O $(DOWNLOAD_LINK)
 	@chmod 755 $(DOWNLOAD_BIN)
-	@mv $(DOWNLOAD_BIN) bin/$(BIN)
+	@echo ">> Moving $(DOWNLOAD_BIN) to ./bin/$(BIN) ..."
+	@mv $(DOWNLOAD_BIN) ./bin/$(BIN)
+
