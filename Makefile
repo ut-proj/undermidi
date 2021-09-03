@@ -1,6 +1,13 @@
 PROJ = undermidi
 PRIV = ./priv
 PWD = $(shell pwd)
+ARCH = $(shell uname -m)
+OS = $(shell uname -s|tr '[:upper:]' '[:lower:]')
+MIDISERVER_VSN = 0.1.0
+MIDISERVER_REPO = https://github.com/ut-proj/midiserver
+BIN = midiserver
+DOWNLOAD_BIN = $(BIN)-$(OS)-$(ARCH)
+DOWNLOAD_LINK = $(MIDISERVER_REPO)/releases/download/$(MIDISERVER_VSN)/$(DOWNLOAD_BIN)
 
 #############################################################################
 ###   General Targets   #####################################################
@@ -62,3 +69,13 @@ clean-go:
 	@cd $(GO_DIR) && $(MAKE) clean
 
 rebuild-go: clean-go build-go
+
+download: bin/midiserver
+
+download-midiserver: bin/midiserver
+
+bin/midiserver:
+	@mkdir -p bin
+	@curl -L --silent -O $(DOWNLOAD_LINK)
+	@chmod 755 $(DOWNLOAD_BIN)
+	@mv $(DOWNLOAD_BIN) bin/$(BIN)

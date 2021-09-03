@@ -38,7 +38,7 @@
   (let ((log-level (logjam:read-log-level "config/sys.config")))
     `#m(opts ()
         args ("-loglevel" ,(go-log-level log-level) "-daemon")
-        binary ,(os:getenv "MIDISERVER")
+        binary ,(undermidi.go.shared:midiserver)
         pid undefined
         os-pid undefined)))
 

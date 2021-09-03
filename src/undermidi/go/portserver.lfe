@@ -120,7 +120,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun create-port ()
-  (let* ((midiserver (os:getenv "MIDISERVER")))
+  (let* ((midiserver (undermidi.go.shared:midiserver)))
     (log-debug "Creating port for ~s ..." (list midiserver))
     (undermidi.util:create-port midiserver '())))
 
