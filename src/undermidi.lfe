@@ -2,7 +2,8 @@
   (export
    (panic 0)
    (start 0)
-   (stop 0))
+   (stop 0)
+   (restart 0))
   (export
    (example 0) (example 1)
    (list-devices 0)
@@ -29,6 +30,10 @@
 
 (defun stop ()
   (application:stop 'undermidi))
+
+(defun restart ()
+  (stop)
+  (start))
 
 (defun quit ()
   (log-info "Stopping OTP application ...")

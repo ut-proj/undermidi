@@ -1,6 +1,7 @@
 ;;;; undermidi module for music functions specific to undermidi
 (defmodule um
   (export
+   (bank-select 3)
    (chord 1) (chord 2)
    (cycle-cc 4)
    (get-pitch 1)
@@ -9,6 +10,7 @@
    (play-note 1) (play-note 2) (play-note 3)
    (play-notes 1) (play-notes 3)
    (play-pitch 2) (play-pitch 3)
+   (program-change 1)
    (ramp-cc 4)
    (set-cc 2)
    (set-channel 1)
@@ -152,6 +154,12 @@
 
 (defun sustain-pedal-on ()
   (set-cc 64 127))
+
+(defun bank-select (msb lsb program)
+  (undermidi:send (midimsg:bank-select msb lsb program)))
+
+(defun program-change (program)
+  (undermidi:send (midimsg:program-change program)))
 
 (defun set-device (int)
   (undermidi:send (midimsg:device int)))
