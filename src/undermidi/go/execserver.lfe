@@ -37,7 +37,7 @@
 (defun initial-state ()
   (let ((log-level (logjam:read-log-level "config/sys.config")))
     `#m(opts ()
-        args ("-loglevel" ,(go-log-level log-level) "-daemon")
+        args ("-loglevel" ,(go-log-level log-level) "-daemon" "-log-reportcaller")
         binary ,(undermidi.go.shared:midiserver)
         pid undefined
         os-pid undefined)))
