@@ -39,8 +39,8 @@
      "USER-FF" (0 #x14)
      "USER-GG" (0 #x15)))
 
-(defun bank-select (bank)
-  (apply 'um 'bank-select (parse-bank bank)))
+(defun bank-select (program)
+  (um:program-change program))
 
-(defun parse-bank (name)
-  '(0 0 1))
+(defun bank-select (bank program)
+  (um:bank-select (mref (bank-lookup) bank) program))
