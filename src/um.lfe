@@ -155,6 +155,10 @@
 (defun sustain-pedal-on ()
   (set-cc 64 127))
 
+(defun bank-select
+  ((`(,msb ,lsb) program)
+   (bank-select msb lsb program)))
+
 (defun bank-select (msb lsb program)
   (undermidi:send (midimsg:bank-select msb lsb program)))
 
