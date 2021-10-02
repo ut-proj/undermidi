@@ -1,6 +1,7 @@
 (defmodule korg
   (export
-   (bank-select 1)))
+   (bank-lookup 0)
+   (bank-select 1) (bank-select 2)))
 
 (defun bank-lookup ()
   #m("INT-A" (0 0)
@@ -39,6 +40,9 @@
      "USER-FF" (0 #x14)
      "USER-GG" (0 #x15)))
 
+;; Note that in order for bank selection to work on the Korg (in particular,
+;; using the Kronos for testing), the "Prog" bank/button needs to be selected
+;; on the face of the synthesizer.
 (defun bank-select (program)
   (um:program-change program))
 
