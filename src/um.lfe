@@ -1,7 +1,7 @@
 ;;;; undermidi module for music functions specific to undermidi
 (defmodule um
   (export
-   (bank-select 3)
+   (bank-select 2) (bank-select 3)
    (chord 1) (chord 2)
    (cycle-cc 4)
    (get-pitch 1)
