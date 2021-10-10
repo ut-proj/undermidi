@@ -476,6 +476,10 @@ C       0
   ((pitch oct)
    (+ pitch (* 12 (+ 1 oct)))))
 
+(defun duplicate (notes times)
+  (lists:flatten
+   (lists:duplicate times notes)))
+
 (defun play
   ((note-name velocity duration) (when (is_atom note-name))
    (play (get-pitch note-name) velocity duration))
