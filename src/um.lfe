@@ -107,6 +107,11 @@
   (timer:sleep duration)
   (undermidi:send (midimsg:note-off pitch)))
 
+(defun play-pitches (pitches velocity duration)
+  (list-comp ((<- pitch pitches))
+    (play-pitch velocity duration))
+  'ok)
+
 (defun sched-cc
   ((value (= `#m(con ,controller incr ,incr acc ,acc) data))
    (let* ((sum (+ acc incr))

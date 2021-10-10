@@ -16,3 +16,9 @@
       (list
          (list-comp ((<- pitch midi-notes))
            (um:octave pitch oct))))))
+
+(defun create (mode index oct key)
+  (create
+   (mref (mref (uth:modes) mode) index)
+   oct
+   key))
