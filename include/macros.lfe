@@ -2,7 +2,7 @@
   `(undermidi:batch (list ,@body)))
 
 (defmacro midi-parallel body
-  `(undermidi:batch (list ,@body) 'true))
+  `(undermidi.msg:batch (list ,@body) 'true))
 
 (defmacro send body
   `(undermidi:send
