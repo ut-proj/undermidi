@@ -7,7 +7,7 @@
   ((chord-name key) (when (is_atom chord-name))
    (pitches (mref (uth.chord:all) chord-name) key))
   ((chord key)
-   (um:template->pitches chord key)))
+   (um.note:template->pitches chord key)))
 
 (defun create (note-names)
   (um.note:get-pitches note-names))
@@ -17,7 +17,7 @@
      (lists:flatten
       (list
          (list-comp ((<- pitch midi-notes))
-           (um:octave pitch oct))))))
+           (um.note:octave pitch oct))))))
 
 (defun create (mode index key oct)
   (create
