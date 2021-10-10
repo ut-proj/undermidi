@@ -46,10 +46,10 @@
 
 (defun play-note (note-name velocity)
   (undermidi:send
-   (midimsg:note-on (um.notes:get-pitch note-name) velocity)))
+   (midimsg:note-on (um.note:get-pitch note-name) velocity)))
 
 (defun play-note (note-name velocity duration)
-  (let ((pitch (um.notes:get-pitch note-name)))
+  (let ((pitch (um.note:get-pitch note-name)))
     (undermidi:send (midimsg:note-on pitch velocity))
     (timer:sleep duration)
     (undermidi:send (midimsg:note-off pitch))))
@@ -109,7 +109,7 @@
 
 (defun stop-note (note-name)
   (undermidi:send
-   (midimsg:note-off (um.notes:get-pitch note-name))))
+   (midimsg:note-off (um.note:get-pitch note-name))))
 
 (defun set-cc (controller value)
   (undermidi:send (midimsg:cc controller value)))
@@ -144,7 +144,7 @@
 
 (defun octave
   ((note-name oct) (when (is_atom note-name))
-   (octave (um.notes:get-pitch note-name) oct))
+   (octave (um.note:get-pitch note-name) oct))
   ((pitch oct)
    (+ pitch (* 12 (+ 1 oct)))))
 
@@ -220,7 +220,7 @@
 
 (defun template->pitches
   ((template key) (when (is_atom key))
-   (template->pitches template (mref (um.notes:all) key)))
+   (template->pitches template (mref (um.note:all) key)))
   ((template key)
    (list-comp ((<- note template))
      (+ (template->pitch note) key))))
