@@ -383,4 +383,12 @@ C#	1
 Db	1
 C-1	0
 C       0
-    ))
+))
+
+(defun get-pitch (name)
+  (mref (all) name))
+
+(defun get-pitches (names)
+  (let ((all (all)))
+    (list-comp ((<- n names))
+      (mref all n))))
