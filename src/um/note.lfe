@@ -1,4 +1,4 @@
-(defmodule um.notes
+(defmodule um.note
   (export all))
 
 (defun	G9	()	127	)
