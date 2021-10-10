@@ -10,7 +10,7 @@
    (um:template->pitches chord key)))
 
 (defun create (note-names)
-  (um.notes:get-pitches note-names))
+  (um.note:get-pitches note-names))
 
 (defun create (chord key oct)
   (let ((midi-notes (pitches chord key)))
