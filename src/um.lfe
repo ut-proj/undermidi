@@ -10,6 +10,7 @@
    (play-note 1) (play-note 2) (play-note 3)
    (play-notes 1) (play-notes 3)
    (play-pitch 2) (play-pitch 3)
+   (play-pitches 3)
    (program-change 1)
    (ramp-cc 4)
    (set-cc 2)
@@ -109,7 +110,7 @@
 
 (defun play-pitches (pitches velocity duration)
   (list-comp ((<- pitch pitches))
-    (play-pitch velocity duration))
+    (play-pitch pitch velocity duration))
   'ok)
 
 (defun sched-cc
@@ -180,7 +181,7 @@
   ((note-name oct) (when (is_atom note-name))
    (octave (get-pitch note-name) oct))
   ((pitch oct)
-   (+ pitch (* 12 oct))))
+   (+ pitch (* 12 (+ 1 oct)))))
 
 (defun template->pitch
   ((1) 0)
