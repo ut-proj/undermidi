@@ -137,11 +137,11 @@ lfe> (progn
        (set pat4 '(C4 C3 C4 C4 Bb3 G3))
        (set pat5 '(C4 C3 C4 C3 Bb3 G3))
 
-       (set seq1 (undermidi.util:dupe-notes pat1 15))
-       (set seq2 (undermidi.util:dupe-notes pat2 12))
-       (set seq3 (undermidi.util:dupe-notes pat3 10))
-       (set seq4 (undermidi.util:dupe-notes pat4 10))
-       (set seq5 (undermidi.util:dupe-notes pat5 10))
+       (set seq1 (um.notes:duplicate pat1 15))
+       (set seq2 (um.notes:duplicate pat2 12))
+       (set seq3 (um.notes:duplicate pat3 10))
+       (set seq4 (um.notes:duplicate pat4 10))
+       (set seq5 (um.notes:duplicate pat5 10))
 
        (set all (lists:append (list seq1 seq2 seq3 seq4 seq5)))
        (um:set-cc (filter-cutoff-frequency) 16)
