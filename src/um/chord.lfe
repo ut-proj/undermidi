@@ -12,18 +12,35 @@
 (defun create (note-names)
   (um.note:get-pitches note-names))
 
-(defun create (chord key oct)
-  (let ((midi-notes (pitches chord key)))
+(defun create (key chord oct)
+  (create key chord oct #m()))
+
+(defun create
+  ((key chord-type oct opts) (when (andalso (is_map opts) (is_atom chord-type)))
+   (create key (uth.chord:chord-or-mode chord-type) oct opts))
+  ((key chord oct opts) (when (is_map opts))
+   (let* ((midi-notes (pitches chord key))
+          (inv (invert midi-notes (maps:get 'inversion opts 1))))
      (lists:flatten
       (list
-         (list-comp ((<- pitch midi-notes))
-           (um.note:octave pitch oct))))))
+       (list-comp ((<- pitch inv))
+         (um.note:octave pitch oct))))))
+  ((key mode index oct)
+   (create key mode index oct #m())))
 
-(defun create (mode index key oct)
+(defun create (key mode index oct opts)
   (create
-   (uth.chord:mode mode index)
    key
-   oct))
+   (uth.chord:mode mode index)
+   oct
+   opts))
+
+(defun invert
+  ((`(,head . ,tail))
+   (lists:append tail (list (+ 12 head)))))
+
+(defun invert (midi-notes nth)
+  (uth.chord:invert midi-notes nth 0 #'invert/1))
 
 (defun data
   ((pitches velocity) (when (is_integer velocity))

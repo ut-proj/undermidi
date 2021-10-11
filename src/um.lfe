@@ -26,18 +26,22 @@
 ;;; Chord convenience aliases
 
 (defun play-chord (pitches velocity duration)
-  (um.chord:play pitches velocity duration))
+  (um.chord:play pitches velocity duration)
+  'ok)
 
 (defun play-chord (chord-name key oct velocity duration)
-  (um.chord:play chord-name key oct velocity duration))
+  (um.chord:play chord-name key oct velocity duration)
+  'ok)
 
 (defun play-chord (mode index key oct velocity duration)
-  (um.chord:play mode index key oct velocity duration))
+  (um.chord:play mode index key oct velocity duration)
+  'ok)
 
 ;; Note and pitch convenience aliases
 
 (defun play-note (note-name velocity duration)
-  (um.note:play note-name velocity duration))
+  (um.note:play note-name velocity duration)
+  'ok)
 
 (defun play-notes (note-names velocity duration)
   (list-comp ((<- note-name note-names))
