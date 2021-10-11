@@ -96,7 +96,6 @@ Here's how to set up for playing a chord (this was created for a sampled MIDI pi
 ``` lisp
 lfe> (progn
        (set bpm 66)
-       (set veloc 80)
        (set pedal-gap 500)
        (set dur (trunc (- (* 4 (/ 60 bpm) 1000) pedal-gap)))
        (set ch1 '(Bb2 F3 Db4))
@@ -183,7 +182,7 @@ lfe> (progn
 
 ### Controls 
 
-In addition to notes abd chords, undermidi can control the knobs on a synthesizer via MIDI CC messages.
+In addition to notes and chords, undermidi can control the knobs on a synthesizer via MIDI CC messages.
 Here's a setup for the Minimoog in the Luna DAW (for Tangerine Dream fans):
 
 ``` lisp
