@@ -18,7 +18,7 @@ This application assumes that the following are on your system:
 * [rebar3](https://www.rebar3.org/) (Erlang build tool)
 
 If you would like to (or need to) build the Golang `midiserver` binary yourself,
-You'll need the following
+You'll also need the following
 * Golang
 * header files from `libasound2-dev` (if you're compiling on Linux)
 
@@ -68,19 +68,41 @@ Depending upon the configured log level, you may see a fair amount of output, in
 
 ## API
 
-For actually using undermidi to generate music, the `um*` modules are used. Here's how to set up for playing a chord (this was created for a sampled MIDI piano on the OS' MIDI channel 1, which maps to the MIDI server's channel 0) :
+For actually using undermidi to generate music, the `um*` modules are used. Notes, chords, and controls are all supported. Before playing, though, the device and MIDI channel must be set:
 
 ``` lisp
 lfe> (progn
        (um:set-device 0)
        (um:set-channel 0)
+       'ok)
+```
+
+### Notes
+
+Individual notes may be played in any of the following ways:
+
+``` lisp
+lfe> (progn
+       (set veloc 80)
+       (set dur 3000))
+lfe> (um:play-note 'Ab3 veloc dur)
+lfe> (um:play-notes '(Ab3 F4 C5) veloc dur)
+```
+
+### Chords
+
+Here's how to set up for playing a chord (this was created for a sampled MIDI piano on the OS' MIDI channel 1, which maps to the MIDI server's channel 0) :
+
+``` lisp
+lfe> (progn
        (set bpm 66)
-       (set veloc 30)
+       (set veloc 80)
        (set pedal-gap 500)
        (set dur (trunc (- (* 4 (/ 60 bpm) 1000) pedal-gap)))
        (set ch1 '(Bb2 F3 Db4))
        (um:soft-pedal-on)
-       (um:play-chord ch1 veloc dur))
+       (um:play-chord ch1 veloc dur)
+       'ok)
 ```
 
 And a few more chords ;-)
@@ -118,7 +140,50 @@ lfe> (progn
 
 Fans of Max Richter will recognise this immediately :-)
 
-In addition to notes, undermidi can control the knobs on a synthesizer via MIDI CC messages.
+The above example defines custom chords with an explicit set of notes. You may also use named chords and their inversions:
+
+``` lisp
+lfe> (progn
+       (set octave 2)
+       (set ch1-a (um.chord:create 'Bb 'minor octave))
+       (set ch1-b (um.chord:create 'Bb 'minor octave #m(inversion 2)))
+       (set ch1-c (um.chord:create 'Bb 'minor octave #m(inversion 3)))
+       (list-comp ((<- ch (list ch1-a ch1-b ch1-c)))
+         (um:play-chord ch veloc dur)))
+```
+
+Or:
+
+``` lisp
+lfe> (list-comp ((<- ch (list ch1-a
+                              (um.chord:invert ch1-a 2)
+                              (um.chord:invert ch1-a 3))))
+       (um:play-chord ch veloc dur))
+```
+
+Chords by roman numeral are also supported:
+
+``` lisp
+lfe> (progn
+       (set ch1-d (um.chord:create 'C# 'ionian 'vi octave))
+       (set ch1-e (um.chord:create 'C# 'aeolian 'i octave))
+       (list-comp ((<- ch (list ch1-d ch1-e)))
+         (um:play-chord ch veloc dur)))
+```
+
+Since there is no overlap in chord function name between the Ionian and Aeolian modes, and those are the two most common, the following shorter syntax for those two is also supported:
+
+``` lisp
+lfe> (progn
+       (set ch1-f (um.chord:create 'C# 'vi octave))
+       (set ch1-g (um.chord:create 'C# 'i octave))
+       (list-comp ((<- ch (list ch1-f ch1-g)))
+         (um:play-chord ch veloc dur)))
+```
+
+### Controls 
+
+In addition to notes abd chords, undermidi can control the knobs on a synthesizer via MIDI CC messages.
 Here's a setup for the Minimoog in the Luna DAW (for Tangerine Dream fans):
 
 ``` lisp
