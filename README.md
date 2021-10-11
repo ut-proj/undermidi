@@ -164,8 +164,9 @@ Chords by roman numeral are also supported:
 
 ``` lisp
 lfe> (progn
-       (set ch1-d (um.chord:create 'C# 'ionian 'vi octave))
-       (set ch1-e (um.chord:create 'C# 'aeolian 'i octave))
+       (set key 'C#)
+       (set ch1-d (um.chord:create key 'ionian 'vi octave))
+       (set ch1-e (um.chord:create key 'aeolian 'i octave))
        (list-comp ((<- ch (list ch1-d ch1-e)))
          (um:play-chord ch veloc dur)))
 ```
@@ -174,8 +175,8 @@ Since there is no overlap in chord function name between the Ionian and Aeolian 
 
 ``` lisp
 lfe> (progn
-       (set ch1-f (um.chord:create 'C# 'vi octave))
-       (set ch1-g (um.chord:create 'C# 'i octave))
+       (set ch1-f (um.chord:create key 'vi octave))
+       (set ch1-g (um.chord:create key 'i octave))
        (list-comp ((<- ch (list ch1-f ch1-g)))
          (um:play-chord ch veloc dur)))
 ```
