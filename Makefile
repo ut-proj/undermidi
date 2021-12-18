@@ -8,10 +8,13 @@ PWD = $(shell pwd)
 
 default: build
 
-build: build-go
+build:
 	@rebar3 compile
 
 rebuild: clean-all build
+
+show-arch-bin:
+	@echo $(DOWNLOAD_BIN)
 
 clean-all: clean-go clean
 
