@@ -20,10 +20,7 @@ DOWNLOAD_LINK = $(MIDISERVER_REPO)/releases/download/$(MIDISERVER_VSN)/$(DOWNLOA
 
 default: build
 
-show-arch-bin:
-	@echo $(DOWNLOAD_BIN)
-
-build: build-go
+build:
 	@rebar3 compile
 
 rebuild: clean-all build
@@ -39,6 +36,9 @@ check:
 	@rebar3 as test lfe ltest
 
 recheck: rebuild check
+
+show-arch-bin:
+	@echo $(DOWNLOAD_BIN)
 
 clean-all: clean-go clean
 	@rm -rf _build rebar.lock
