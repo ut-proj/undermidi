@@ -8,3 +8,6 @@
   (if (use-go-src?)
     (os:getenv "MIDISERVER")
     (os:getenv "PRECOMPILED_MIDISERVER")))
+
+(defun midi-in ()
+  (os:getenv "MIDI_IN"))
