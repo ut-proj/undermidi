@@ -17,7 +17,13 @@
    (soft-pedal-on 0)
    (stop-note 1)
    (sustain-pedal-off 0)
-   (sustain-pedal-on 0)))
+   (sustain-pedal-on 0)
+   (rt-clock 0)
+   (rt-continue 0)
+   (rt-reset 0)
+   (rt-start 0)
+   (rt-stop 0)
+   (rt-tick 0)))
 
 (include-lib "undermidi/include/notes.lfe")
 
