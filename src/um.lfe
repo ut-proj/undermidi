@@ -118,3 +118,23 @@
 
 (defun set-channel (int)
   (undermidi:send (midimsg:channel int)))
+
+;; Real-time messages
+
+(defun rt-clock ()
+  (undermidi:send (midimsg:rt-clock)))
+
+(defun rt-continue ()
+  (undermidi:send (midimsg:rt-continue)))
+
+(defun rt-reset ()
+  (undermidi:send (midimsg:rt-reset)))
+
+(defun rt-start ()
+  (undermidi:send (midimsg:rt-start)))
+
+(defun rt-stop ()
+  (undermidi:send (midimsg:rt-stop)))
+
+(defun rt-tick ()
+  (undermidi:send (midimsg:rt-tick)))
