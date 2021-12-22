@@ -27,6 +27,7 @@
 (defun go-server () 'undermidi.go.execserver)
 (defun liveplay () 'undermidi.liveplay)
 (defun beatracker () 'undermidi.beatracker)
+(defun extclock () 'undermidi.extclock)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   OTP Supervisor   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -50,7 +51,8 @@
 	           period 60)
             (,(child (go-server))
              ,(child (liveplay))
-             ,(child (beatracker))))))
+             ,(child (beatracker))
+             ,(child (extclock))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
