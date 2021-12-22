@@ -35,11 +35,13 @@
 (defun DELIMITER () #"\n")
 
 (defun initial-state ()
-  (let ((log-level (logjam:read-log-level "config/sys.config")))
+  (let ((log-level (logjam:read-log-level "config/sys.config"))
+        (node-name (io_lib:format "~s" `(,(erlang:node)))))
     `#m(opts ()
         args ("-loglevel" ,(go-log-level log-level)
               "-daemon" "-log-reportcaller"
-              "-midi-in" ,(undermidi.go.shared:midi-in))
+              "-midi-in" ,(undermidi.go.shared:midi-in)
+              "-remote-node" ,node-name)
         binary ,(undermidi.go.shared:midiserver)
         pid undefined
         os-pid undefined)))
