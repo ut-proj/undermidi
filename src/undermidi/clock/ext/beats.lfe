@@ -14,14 +14,24 @@
 (defun SERVER () (MODULE))
 (defun table-name () 'extbeats)
 (defun table-desc () "External MIDI clock beats table")
+(defun genserver-opts () '())
+(defun default-time-sig () #(4 4))
+
 (defun table-options ()
   '(set named_table public))
+
 (defun initial-state ()
   `#m(name ,(table-name)
       table-name ,(table-name)
       table-desc ,(table-desc)
       controlling-process ,(MODULE)))
-(defun genserver-opts () '())
+
+(defun init-track (name time-sig)
+  (let ((now (erlang:timestamp)))
+    `#m(name ,name
+        created-at ,now
+        time-sigs (#(,time-sig ,now)))))
+
 (defun unknown-command (data)
   `#(error ,(lists:flatten (++ "Unknown command: " data))))
 
@@ -88,10 +98,57 @@
   `#(ok ,state))
 
 ;;;;;::=------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;::=-   Clock API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;::=-   Beats API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TBD
+(defun bpm () (undermidi.clock.ext:bpm))
+(defun bpm (last-n) (undermidi.clock.ext:bpm last-n))
+(defun bpm-max () (undermidi.clock.ext:bpm-max))
+
+(defun new-track (name)
+  (new-track name (default-time-sig)))
+
+(defun new-track (name time-sig)
+  (gen_server:call (SERVER) `#(track-create ,name ,time-sig)))
+
+(defun start-track (name)
+  (gen_server:call (SERVER) `#(track-start ,name)))
+
+(defun stop-track (name)
+  (gen_server:call (SERVER) `#(track-stop ,name)))
+
+(defun list ()
+  (gen_server:call (SERVER) `#(tracks-names)))
+
+(defun data (name)
+  (let ((base (gen_server:call (SERVER) `#(track ,name))))
+    (maps:merge
+     base
+     `#m(current-beat 0
+         current-measure 0))))
+
+(defun started-at (name)
+  (mref (gen_server:call (SERVER) `#(track ,name)) 'started-at))
+
+(defun time-sig (name)
+  (lists:last (mref (gen_server:call (SERVER) `#(track ,name)) 'time-sigs)))
+
+(defun measure (name)
+  (mref (data name) 'current-measure))
+
+(defun beat (name)
+  (mref (data name) 'current-beat))
+
+(defun time-change (name time-sig)
+  (gen_server:call (SERVER) `#(track-time-change ,name ,time-sig)))
+
+(defun export-track (name)
+  ;; TODO: save term data to temp file
+  'todo)
+
+(defun dump ()
+  ;; TODO: save ets table to temp file
+  'todo)
 
 ;;;;;::=---------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   metadata API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
