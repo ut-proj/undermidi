@@ -223,10 +223,15 @@
     (lists:reverse (lists:seq end start))))
 
 (defun table-info
+  ((table-name)
+   (let ((info (ets:info table-name)))
+     (case info
+       ('undefined '())
+       (_ info))))
   ((`#m(table-name ,table-name
         table-desc ,table-desc
         controlling-process ,controlling-process))
    (maps:merge `#m(controlling-process ,controlling-process
                    name ,table-name
                    description ,table-desc)
-               (maps:from_list (ets:info table-name)))))
+               (maps:from_list (table-info table-name)))))
