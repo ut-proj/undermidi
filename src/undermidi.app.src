@@ -13,6 +13,8 @@
   {modules, [
     'undermidi.go.execserver',
     'undermidi.go.portserver',
+    'undermidi.clock.ext',
+    'undermidi.clock.ext.beats',
     'undermidi.util'
   ]},
 
