@@ -1,7 +1,8 @@
 ;;;; This module is for keeping track of an external clock's ticks as well
 ;;;; as providing ccconvenience functions that help calculate things like
 ;;;; measures, beats, etc.,
-(defmodule undermidi.extclock
+(defmodule undermidi.clock.ext.beats
+  (behaviour gen_server)
   (export all))
 
 (include-lib "logjam/include/logjam.hrl")
@@ -11,12 +12,12 @@
 ;;;;;::=--------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun SERVER () (MODULE))
-(defun table-name () 'extclock)
-(defun table-desc () "External MIDI clock table")
+(defun table-name () 'extbeats)
+(defun table-desc () "External MIDI clock beats table")
 (defun table-options ()
-  '(bag named_table public))
+  '(set named_table public))
 (defun initial-state ()
-  `#m(name extclock
+  `#m(name ,(table-name)
       table-name ,(table-name)
       table-desc ,(table-desc)
       controlling-process ,(MODULE)))
@@ -29,7 +30,7 @@
 ;;;;;::=-----------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun start_link ()
-  (log-info "Starting undermidi external MIDI clock server ...")
+  (log-info "Starting undermidi external MIDI clock beats server ...")
   (gen_server:start_link `#(local ,(SERVER))
                          (MODULE)
                          (initial-state)

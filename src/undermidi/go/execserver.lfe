@@ -31,6 +31,10 @@
 
 (include-lib "logjam/include/logjam.hrl")
 
+;;;;;::=--------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;::=-   config functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=--------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defun SERVER () (MODULE))
 (defun DELIMITER () #"\n")
 
@@ -55,7 +59,7 @@
 ;;;;;::=-----------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun start_link ()
-  (log-info "Starting OTP gen_server ...")
+  (log-info "Starting midiserver controller ...")
   (gen_server:start_link `#(local ,(SERVER))
                          (MODULE)
                          (initial-state)
@@ -69,7 +73,7 @@
 ;;;;;::=---------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun init (state)
-  (log-debug "Initialising OTP gen_server ...")
+  (log-debug "Initialising midiserver controller ...")
   (erlang:process_flag 'trap_exit 'true)
   (let ((start-state (start-midiserver (self) state)))
     (log-debug "Start state: ~p" (list start-state))
@@ -147,10 +151,10 @@
    (log-warn "~p: exited with status ~p" `(,port ,exit-status))
    `#(noreply ,state))
   ((`#(EXIT ,_from normal) state)
-   (logger:info "midiserver server is exiting (normal).")
+   (logger:info "midiserver controller is exiting (normal).")
    `#(noreply ,state))
   ((`#(EXIT ,_from shutdown) state)
-   (logger:info "midiserver server is exiting (shutdown).")
+   (logger:info "midiserver controller is exiting (shutdown).")
    `#(noreply ,state))
   ((`#(EXIT ,pid ,reason) state)
    (log-notice "Process ~p exited! (Reason: ~p)" `(,pid ,reason))
@@ -162,7 +166,7 @@
 
 (defun terminate
   ((_reason `#m(os-pid ,os-pid))
-   (log-notice "Terminating midiserver server ...")
+   (log-notice "Terminating midiserver controller ...")
    (catch (exec:stop os-pid))
    'ok))
 
