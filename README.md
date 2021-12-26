@@ -40,28 +40,35 @@ $ make download
 
 ## Build & Run
 
-Once you've selected how pull in the Go `midiserver`, you can build and run the LFE code:
+Once you've selected how pull in the Go `midiserver`, you can build and run the
+LFE code:
 
 ```shell
 $ rebar3 compile
 ```
 
-If you're using the downloaded binary, you don't need anything special, just run the usual:
+If you're using the downloaded binary, you don't need anything special, just run
+this:
 
 ``` shell
-$ rebar3 lfe repl
+$ rebar3 undermidi
 ```
 
-However, if you're building from source, you'll need to set an environment variable:
+However, if you're building from source, you'll need to set an environment
+variable:
 
 ``` shell
-$ USE_GO_SRC=true rebar3 lfe repl
+$ USE_GO_SRC=true rebar3 undermidi
 ```
+
+Note that in both cases LFE (really, its REPL) is being run as a distributed
+Erlang node. The midiserver, while written in Go, is run as another Erlang node,
+thus supporting two-way communications between the two.
 
 Once the LFE REPL is ready, you can start the app:
 
 ```cl
-lfe> (undermidi:start)
+(undermidi@local)lfe> (undermidi:start)
 ```
 
 Depending upon the configured log level, you may see a fair amount of output, including the Go MIDI server being started.
@@ -71,10 +78,10 @@ Depending upon the configured log level, you may see a fair amount of output, in
 For actually using undermidi to generate music, the `um*` modules are used. Notes, chords, and controls are all supported. Before playing, though, the device and MIDI channel must be set:
 
 ``` lisp
-lfe> (progn
-       (um:set-device 0)
-       (um:set-channel 0)
-       'ok)
+(undermidi@local)lfe> (progn
+                        (um:set-device 0)
+                        (um:set-channel 0)
+                        'ok)
 ```
 
 ### Notes
@@ -82,11 +89,11 @@ lfe> (progn
 Individual notes may be played in any of the following ways:
 
 ``` lisp
-lfe> (progn
-       (set veloc 80)
-       (set dur 3000))
-lfe> (um:play-note 'Ab3 veloc dur)
-lfe> (um:play-notes '(Ab3 F4 C5) veloc dur)
+(undermidi@local)lfe> (progn
+                        (set veloc 80)
+                        (set dur 3000))
+(undermidi@local)lfe> (um:play-note 'Ab3 veloc dur)
+(undermidi@local)lfe> (um:play-notes '(Ab3 F4 C5) veloc dur)
 ```
 
 ### Chords
@@ -94,47 +101,47 @@ lfe> (um:play-notes '(Ab3 F4 C5) veloc dur)
 Here's how to set up for playing a chord (this was created for a sampled MIDI piano on the OS' MIDI channel 1, which maps to the MIDI server's channel 0) :
 
 ``` lisp
-lfe> (progn
-       (set bpm 66)
-       (set pedal-gap 500)
-       (set dur (trunc (- (* 4 (/ 60 bpm) 1000) pedal-gap)))
-       (set ch1 '(Bb2 F3 Db4))
-       (um:soft-pedal-on)
-       (um:play-chord ch1 veloc dur)
-       'ok)
+(undermidi@local)lfe> (progn
+                        (set bpm 66)
+                        (set pedal-gap 500)
+                        (set dur (trunc (- (* 4 (/ 60 bpm) 1000) pedal-gap)))
+                        (set ch1 '(Bb2 F3 Db4))
+                        (um:soft-pedal-on)
+                        (um:play-chord ch1 veloc dur)
+                        'ok)
 ```
 
 And a few more chords ;-)
 
 ``` lisp
-lfe> (progn
-       (set ch2 '(Ab2 F3 C4))
-       (set ch3 '(Db2 Db3 Ab3))
-       (set ch4 '(Gb2 Gb3 Bb3))
-       (set ch5 '(C3 Ab3 Eb4))
-       (set ch6 '(Db3 Ab3 Eb4))
-       (set ch7 '(C3 Ab3 F4))
-       (set ch8 '(F2 Db3 Ab3))
-       (set ch9 '(Ab2 F3 C4))
-       (set ch10 '(Gb2 Eb3 Bb3))
-       (set ch11 '(Eb2 Gb3 C4))
-       'ok)
-lfe> (progn
-       (list-comp ((<- ch (list ch1 ch2 ch3 ch4
-                                ch1 ch2 ch3 ch4
-                                ch1 ch5 ch6 ch7
-                                ch1 ch5 ch6 ch2
-                                ch1 ch8 ch4 ch9
-                                ch1 ch8 ch10 ch11)))
-         ;; tweak the velocity for some dynamics
-         (let ((veloc (+ veloc (trunc (* 3 (- 3 (* 8 (rand:uniform))))))))
-           (um:sustain-pedal-off)
-           (timer:sleep pedal-gap)
-           (um:sustain-pedal-on)
-           (um:play-chord ch veloc dur)))
-       (um:sustain-pedal-off)
-       (um:soft-pedal-off)
-       'ok)
+(undermidi@local)lfe> (progn
+                        (set ch2 '(Ab2 F3 C4))
+                        (set ch3 '(Db2 Db3 Ab3))
+                        (set ch4 '(Gb2 Gb3 Bb3))
+                        (set ch5 '(C3 Ab3 Eb4))
+                        (set ch6 '(Db3 Ab3 Eb4))
+                        (set ch7 '(C3 Ab3 F4))
+                        (set ch8 '(F2 Db3 Ab3))
+                        (set ch9 '(Ab2 F3 C4))
+                        (set ch10 '(Gb2 Eb3 Bb3))
+                        (set ch11 '(Eb2 Gb3 C4))
+                        'ok)
+(undermidi@local)lfe> (progn
+                        (list-comp ((<- ch (list ch1 ch2 ch3 ch4
+                                                 ch1 ch2 ch3 ch4
+                                                 ch1 ch5 ch6 ch7
+                                                 ch1 ch5 ch6 ch2
+                                                 ch1 ch8 ch4 ch9
+                                                 ch1 ch8 ch10 ch11)))
+                          ;; tweak the velocity for some dynamics
+                          (let ((veloc (+ veloc (trunc (* 3 (- 3 (* 8 (rand:uniform))))))))
+                            (um:sustain-pedal-off)
+                            (timer:sleep pedal-gap)
+                            (um:sustain-pedal-on)
+                            (um:play-chord ch veloc dur)))
+                        (um:sustain-pedal-off)
+                        (um:soft-pedal-off)
+                        'ok)
 ```
 
 Fans of Max Richter will recognise this immediately :-)
@@ -142,43 +149,43 @@ Fans of Max Richter will recognise this immediately :-)
 The above example defines custom chords with an explicit set of notes. You may also use named chords and their inversions:
 
 ``` lisp
-lfe> (progn
-       (set octave 2)
-       (set ch1-a (um.chord:create 'Bb 'minor octave))
-       (set ch1-b (um.chord:create 'Bb 'minor octave #m(inversion 2)))
-       (set ch1-c (um.chord:create 'Bb 'minor octave #m(inversion 3)))
-       (list-comp ((<- ch (list ch1-a ch1-b ch1-c)))
-         (um:play-chord ch veloc dur)))
+(undermidi@local)lfe> (progn
+                        (set octave 2)
+                        (set ch1-a (um.chord:create 'Bb 'minor octave))
+                        (set ch1-b (um.chord:create 'Bb 'minor octave #m(inversion 2)))
+                        (set ch1-c (um.chord:create 'Bb 'minor octave #m(inversion 3)))
+                        (list-comp ((<- ch (list ch1-a ch1-b ch1-c)))
+                          (um:play-chord ch veloc dur)))
 ```
 
 Or:
 
 ``` lisp
-lfe> (list-comp ((<- ch (list ch1-a
-                              (um.chord:invert ch1-a 2)
-                              (um.chord:invert ch1-a 3))))
-       (um:play-chord ch veloc dur))
+(undermidi@local)lfe> (list-comp ((<- ch (list ch1-a
+                                               (um.chord:invert ch1-a 2)
+                                               (um.chord:invert ch1-a 3))))
+                        (um:play-chord ch veloc dur))
 ```
 
 Chords by roman numeral are also supported:
 
 ``` lisp
-lfe> (progn
-       (set key 'C#)
-       (set ch1-d (um.chord:create key 'ionian 'vi octave))
-       (set ch1-e (um.chord:create key 'aeolian 'i octave))
-       (list-comp ((<- ch (list ch1-d ch1-e)))
-         (um:play-chord ch veloc dur)))
+(undermidi@local)lfe> (progn
+                        (set key 'C#)
+                        (set ch1-d (um.chord:create key 'ionian 'vi octave))
+                        (set ch1-e (um.chord:create key 'aeolian 'i octave))
+                        (list-comp ((<- ch (list ch1-d ch1-e)))
+                          (um:play-chord ch veloc dur)))
 ```
 
 Since there is no overlap in chord function name between the Ionian and Aeolian modes, and those are the two most common, the following shorter syntax for those two is also supported:
 
 ``` lisp
-lfe> (progn
-       (set ch1-f (um.chord:create key 'vi octave))
-       (set ch1-g (um.chord:create key 'i octave))
-       (list-comp ((<- ch (list ch1-f ch1-g)))
-         (um:play-chord ch veloc dur)))
+(undermidi@local)lfe> (progn
+                        (set ch1-f (um.chord:create key 'vi octave))
+                        (set ch1-g (um.chord:create key 'i octave))
+                        (list-comp ((<- ch (list ch1-f ch1-g)))
+                          (um:play-chord ch veloc dur)))
 ```
 
 ### Controls 
@@ -187,31 +194,31 @@ In addition to notes and chords, undermidi can control the knobs on a synthesize
 Here's a setup for the Minimoog in the Luna DAW (for Tangerine Dream fans):
 
 ``` lisp
-lfe> (include-lib "undermidi/include/luna/minimoog.lfe")
+(undermidi@local)lfe> (include-lib "undermidi/include/luna/minimoog.lfe")
 
-lfe> (progn
-       (um:set-device 0)
-       (um:set-channel 0)
+(undermidi@local)lfe> (progn
+                        (um:set-device 0)
+                        (um:set-channel 0)
 
-       (set velocity 80)
-       (set bpm 250)
-       (set dur (trunc (* (/ 60 bpm) 1000)))
-       (set pat1 '(C4 C4 Bb3 G3))
-       (set pat2 '(C4 C4 C4 Bb3 G3))
-       (set pat3 '(C4 C4 C4 C4 Bb3 G3))
-       (set pat4 '(C4 C3 C4 C4 Bb3 G3))
-       (set pat5 '(C4 C3 C4 C3 Bb3 G3))
+                        (set velocity 80)
+                        (set bpm 250)
+                        (set dur (trunc (* (/ 60 bpm) 1000)))
+                        (set pat1 '(C4 C4 Bb3 G3))
+                        (set pat2 '(C4 C4 C4 Bb3 G3))
+                        (set pat3 '(C4 C4 C4 C4 Bb3 G3))
+                        (set pat4 '(C4 C3 C4 C4 Bb3 G3))
+                        (set pat5 '(C4 C3 C4 C3 Bb3 G3))
 
-       (set seq1 (um.notes:duplicate pat1 15))
-       (set seq2 (um.notes:duplicate pat2 12))
-       (set seq3 (um.notes:duplicate pat3 10))
-       (set seq4 (um.notes:duplicate pat4 10))
-       (set seq5 (um.notes:duplicate pat5 10))
+                        (set seq1 (um.notes:duplicate pat1 15))
+                        (set seq2 (um.notes:duplicate pat2 12))
+                        (set seq3 (um.notes:duplicate pat3 10))
+                        (set seq4 (um.notes:duplicate pat4 10))
+                        (set seq5 (um.notes:duplicate pat5 10))
 
-       (set all (lists:append (list seq1 seq2 seq3 seq4 seq5)))
-       (um:set-cc (filter-cutoff-frequency) 16)
-       (um:cycle-cc (filter-cutoff-frequency) 16 70 68)
-       (um:play-notes all velocity dur))
+                        (set all (lists:append (list seq1 seq2 seq3 seq4 seq5)))
+                        (um:set-cc (filter-cutoff-frequency) 16)
+                        (um:cycle-cc (filter-cutoff-frequency) 16 70 68)
+                        (um:play-notes all velocity dur))
 ```
 
 You can do more than that at once, however you may experience MIDI or timing jitter (that will go away once the beat tracking is implemented). If you'd like to experiment with more, try this (using the same notes as above):
@@ -234,14 +241,14 @@ You can do more than that at once, however you may experience MIDI or timing jit
 Various application-level functions (i.e., "admin stuff") is available in the `undermidi*` modules, e.g.:
 
 ```lisp
-lfe> (undermidi:ping)
+(undermidi@local)lfe> (undermidi:ping)
 pong
 ```
 
 Play the example MIDI code (requires the first MIDI device on your system, index 0, to be connected to a MIDI device, hardware or software, listening on channel 1):
 
 ```lisp
-lfe> (undermidi:example)
+(undermidi@local)lfe> (undermidi:example)
 ok
 ```
 
@@ -251,9 +258,9 @@ ok
 The `midi` macros is provided as a typing convenience for generating MIDI messages:
 
 ``` lisp
-lfe> (include-lib "undermidi/include/macros.lfe")
-lfe> (midi (midimsg:device 0)
-           (midimsg:channel 0))
+(undermidi@local)lfe> (include-lib "undermidi/include/macros.lfe")
+(undermidi@local)lfe> (midi (midimsg:device 0)
+                            (midimsg:channel 0))
 #(midi
   #(batch
     (#(device 0) 
@@ -263,14 +270,14 @@ lfe> (midi (midimsg:device 0)
 The `send` macro from the same include saves typing when sending many messages to the Go MIDI server. Additionally, macros for MIDI notes are provided via another include:
 
 ``` lisp
-lfe> (include-lib "undermidi/include/notes.lfe")
-lfe> (set veloc 40)
-lfe> (progn
-       (send (midimsg:device 0)
-             (midimsg:channel 0))
-       (send (midimsg:note-on (Bb1) veloc))
-       (timer:sleep 2000)
-       (send (midimsg:note-off (Bb1))))
+(undermidi@local)lfe> (include-lib "undermidi/include/notes.lfe")
+(undermidi@local)lfe> (set veloc 40)
+(undermidi@local)lfe> (progn
+                        (send (midimsg:device 0)
+                        (midimsg:channel 0))
+                        (send (midimsg:note-on (Bb1) veloc))
+                        (timer:sleep 2000)
+                        (send (midimsg:note-off (Bb1))))
 ```
 
 By default, batched messages sent to the MIDI server will be executed serially, in the order they are defined in the batch.
@@ -278,9 +285,9 @@ By default, batched messages sent to the MIDI server will be executed serially, 
 To execute these in parallel, one must annotate the messages appropriately:
 
 ``` lisp
-lfe> (midi-parallel (midimsg:note-on (Bb2) veloc)
-                    (midimsg:note-on (F3) veloc)
-                    (midimsg:note-on (Db4) veloc))
+(undermidi@local)lfe> (midi-parallel (midimsg:note-on (Bb2) veloc)
+                                     (midimsg:note-on (F3) veloc)
+                                     (midimsg:note-on (Db4) veloc))
 #(midi
   #(batch
     (#(id #B(1 5 108 38 116 193 73 249 156 64 81 98 200 199 193 170))
@@ -294,14 +301,14 @@ lfe> (midi-parallel (midimsg:note-on (Bb2) veloc)
 You may send this message with either the `send-parallel` or the shorter `cast` macro:
 
 ``` lisp
-lfe> (progn 
-       (cast (midimsg:note-on (Bb2) volume)
-             (midimsg:note-on (F3) volume)
-             (midimsg:note-on (Db4) volume))
-       (timer:sleep 4000)
-       (cast (midimsg:note-off (Bb2))
-             (midimsg:note-off (F3))
-             (midimsg:note-off (Db4))))
+(undermidi@local)lfe> (progn 
+                        (cast (midimsg:note-on (Bb2) volume)
+                              (midimsg:note-on (F3) volume)
+                              (midimsg:note-on (Db4) volume))
+                        (timer:sleep 4000)
+                        (cast (midimsg:note-off (Bb2))
+                              (midimsg:note-off (F3))
+                              (midimsg:note-off (Db4))))
 ```
 
 [//]: ---Named-Links---
