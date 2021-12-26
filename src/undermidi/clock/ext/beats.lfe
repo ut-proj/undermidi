@@ -21,7 +21,8 @@
   '(set named_table public))
 
 (defun initial-state ()
-  `#m(name ,(table-name)
+  `#m(current-track 'undefined
+      name ,(table-name)
       table-name ,(table-name)
       table-desc ,(table-desc)
       controlling-process ,(MODULE)))
@@ -65,16 +66,18 @@
   ((`#(track-create ,name ,time-sig) state)
    (add-track name time-sig)
   `#(noreply ,state))
-  ((`#(track-start ,name) state)
+  ((`#(track-current ,name) state)
+  `#(noreply ,(maps:merge state `#m(current-track ,name))))
+  ((`#(track-start) (= `#m(current-track ,name) state))
    (merge-row name `#m(started-at ,(erlang:timestamp)))
   `#(noreply ,state))
-  ((`#(track-stop ,name) state)
+  ((`#(track-stop ,name) (= `#m(current-track ,name) state))
    (merge-row name `#m(stopped-at ,(erlang:timestamp)))
   `#(noreply ,state))
-  ((`#(track-time-change ,name ,time-sig) state)
+  ((`#(track-time-change ,time-sig) (= `#m(current-track ,name) state))
    (add-time-change name time-sig)
   `#(noreply ,state))
-  ((`#(track-tempo-change ,name) state)
+  ((`#(track-tempo-change) (= `#m(current-track ,name) state))
    (add-tempo-change name)
    `#(noreply ,state))
   ;; Fall-through
@@ -85,8 +88,10 @@
   ;; API
   ((`#(tracks-names) _from state)
    `#(reply ,(get-names) ,state))
-  ((`#(track ,name) _from state)
+  ((`#(track-data) _from (= `#m(current-track ,name) state))
    `#(reply ,(get-row name) ,state))
+  ((`#(track-name) _from (= `#m(current-track ,name) state))
+   `#(reply ,name ,state))
   ;; Metadata
   ((#(table-info) _from state)
    `#(reply ,(undermidi.util:table-info state) ,state))
@@ -130,51 +135,63 @@
 (defun new-track (name time-sig)
   (gen_server:cast (SERVER) `#(track-create ,name ,time-sig)))
 
-(defun start-track (name)
-  (gen_server:cast (SERVER) `#(track-start ,name)))
+(defun set-track (name)
+  (gen_server:cast (SERVER) `#(track-current ,name)))
 
-(defun stop-track (name)
-  (gen_server:cast (SERVER) `#(track-stop ,name)))
+(defun start-track ()
+  (gen_server:cast (SERVER) `#(track-start)))
+
+(defun stop-track ()
+  (gen_server:cast (SERVER) `#(track-stop)))
 
 (defun list ()
   (gen_server:call (SERVER) `#(tracks-names)))
 
-(defun data (name)
-  (let ((base (gen_server:call (SERVER) `#(track ,name))))
+(defun data ()
+  (let ((base (gen_server:call (SERVER) `#(track-data))))
     (maps:merge
      base
-     `#m(current-beat 0
-         current-measure 0))))
+     `#m(current-beat ,(beat)
+         current-measure ,(measure)
+         duration ,(duration)))))
 
-(defun started-at (name)
-  (mref (gen_server:call (SERVER) `#(track ,name)) 'started-at))
+(defun track ()
+  (gen_server:call (SERVER) `#(track-name)))
 
-(defun time-sig (name)
-  (element 1 (lists:last (mref (gen_server:call (SERVER) `#(track ,name)) 'time-sigs))))
+(defun started-at ()
+  (mref (gen_server:call (SERVER) `#(track-data)) 'started-at))
 
-(defun measure-length (name)
-  (element 1 (time-sig name)))
+(defun time-sig ()
+  (element 1 (lists:last (mref (gen_server:call (SERVER) `#(track-data))
+                               'time-sigs))))
 
-(defun measure (name)
-  (+ 1 (floor (/ (beat name) (measure-length name)))))
+(defun measure-length ()
+  (element 1 (time-sig)))
 
-(defun beat (name)
+(defun measure ()
+  (+ 1 (floor (/ (beat) (measure-length)))))
+
+(defun beat ()
   ;; TODO: take into account all tempo changes
   (let* ((now (erlang:timestamp))
-         (start (started-at name))
+         (start (started-at))
          (run-time (/ (timer:now_diff now start) 60000000)))
     (floor (* run-time (bpm)))))
 
-(defun duration (name)
-  (let* ((ms (timer:now_diff (erlang:timestamp) (started-at name)))
+(defun duration ()
+  (let* ((ms (timer:now_diff (erlang:timestamp) (started-at)))
          (time (calendar:seconds_to_time (floor (/ ms 1000000)))))
     (io_lib:format "~B:~B:~B" (tuple_to_list time))))
 
-(defun time-change (name time-sig)
-  (gen_server:cast (SERVER) `#(track-time-change ,name ,time-sig)))
+(defun time-change (time-sig)
+  (gen_server:cast (SERVER) `#(track-time-change ,time-sig)))
 
-(defun tempo-change (name)
-  (gen_server:cast (SERVER) `#(track-tempo-change ,name ,(bpm))))
+(defun tempo-change ()
+  (gen_server:cast (SERVER) `#(track-tempo-change ,(bpm))))
+
+(defun export-track ()
+  ;; TODO: save term data to temp file
+  (export-track (track)))
 
 (defun export-track (name)
   ;; TODO: save term data to temp file

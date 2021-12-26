@@ -24,9 +24,9 @@
     (io:format "~s" (list (undermidi.util:banner)))
     (logjam:set-handler-from-config cfg-file)
     (logger:set_application_level 'undermidi (logjam:read-log-level cfg-file))
-    (log-notice "Starting undermidi ...")
+    (log-notice "Starting undermidi, version ~s ..." (list (undermidi.util:version)))
     (application:ensure_all_started 'undermidi)
-    (lfe_io:format "\nVersions:\n~p\n" (list (versions)))))
+    (log-debug "\nVersions:\n~p\n" (list (versions)))))
 
 (defun stop ()
   (application:stop 'undermidi))
@@ -82,7 +82,4 @@
   (undermidi.supervisor:version))
 
 (defun versions ()
-  ;;  (let ((`#(result ,go-app-vsn) (version-midiserver)))
-  ;;    (++ (undermidi.util:versions)
-  ;;        `(#(midiserver ,go-app-vsn))))
   (undermidi.util:versions))
