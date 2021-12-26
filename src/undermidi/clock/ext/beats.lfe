@@ -150,13 +150,25 @@
   (mref (gen_server:call (SERVER) `#(track ,name)) 'started-at))
 
 (defun time-sig (name)
-  (lists:last (mref (gen_server:call (SERVER) `#(track ,name)) 'time-sigs)))
+  (element 1 (lists:last (mref (gen_server:call (SERVER) `#(track ,name)) 'time-sigs))))
+
+(defun measure-length (name)
+  (element 1 (time-sig name)))
 
 (defun measure (name)
-  (mref (data name) 'current-measure))
+  (+ 1 (floor (/ (beat name) (measure-length name)))))
 
 (defun beat (name)
-  (mref (data name) 'current-beat))
+  ;; TODO: take into account all tempo changes
+  (let* ((now (erlang:timestamp))
+         (start (started-at name))
+         (run-time (/ (timer:now_diff now start) 60000000)))
+    (floor (* run-time (bpm)))))
+
+(defun duration (name)
+  (let* ((ms (timer:now_diff (erlang:timestamp) (started-at name)))
+         (time (calendar:seconds_to_time (floor (/ ms 1000000)))))
+    (io_lib:format "~B:~B:~B" (tuple_to_list time))))
 
 (defun time-change (name time-sig)
   (gen_server:cast (SERVER) `#(track-time-change ,name ,time-sig)))
@@ -248,4 +260,3 @@
                                    `(#(,(bpm) ,(erlang:timestamp)))))
          (new-data (maps:merge old-data `#m(bpms ,new-tempos))))
     (update-row track-name new-data)))
-
