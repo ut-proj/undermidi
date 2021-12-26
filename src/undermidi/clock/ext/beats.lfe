@@ -26,11 +26,12 @@
       table-desc ,(table-desc)
       controlling-process ,(MODULE)))
 
-(defun init-track (name time-sig)
+(defun init-row (name time-sig)
   (let ((now (erlang:timestamp)))
     `#m(name ,name
         created-at ,now
-        time-sigs (#(,time-sig ,now)))))
+        time-sigs (#(,time-sig ,now))
+        bpms (#(,(bpm) ,now)))))
 
 (defun unknown-command (data)
   `#(error ,(lists:flatten (++ "Unknown command: " data))))
@@ -60,10 +61,32 @@
    `#(ok ,state)))
 
 (defun handle_cast
+  ;; API
+  ((`#(track-create ,name ,time-sig) state)
+   (add-track name time-sig)
+  `#(noreply ,state))
+  ((`#(track-start ,name) state)
+   (merge-row name `#m(started-at ,(erlang:timestamp)))
+  `#(noreply ,state))
+  ((`#(track-stop ,name) state)
+   (merge-row name `#m(stopped-at ,(erlang:timestamp)))
+  `#(noreply ,state))
+  ((`#(track-time-change ,name ,time-sig) state)
+   (add-time-change name time-sig)
+  `#(noreply ,state))
+  ((`#(track-tempo-change ,name) state)
+   (add-tempo-change name)
+   `#(noreply ,state))
+  ;; Fall-through
   ((_msg state)
    `#(noreply ,state)))
 
 (defun handle_call
+  ;; API
+  ((`#(tracks-names) _from state)
+   `#(reply ,(get-names) ,state))
+  ((`#(track ,name) _from state)
+   `#(reply ,(get-row name) ,state))
   ;; Metadata
   ((#(table-info) _from state)
    `#(reply ,(undermidi.util:table-info state) ,state))
@@ -101,21 +124,17 @@
 ;;;::=-   Beats API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun bpm () (undermidi.clock.ext:bpm))
-(defun bpm (last-n) (undermidi.clock.ext:bpm last-n))
-(defun bpm-max () (undermidi.clock.ext:bpm-max))
-
 (defun new-track (name)
   (new-track name (default-time-sig)))
 
 (defun new-track (name time-sig)
-  (gen_server:call (SERVER) `#(track-create ,name ,time-sig)))
+  (gen_server:cast (SERVER) `#(track-create ,name ,time-sig)))
 
 (defun start-track (name)
-  (gen_server:call (SERVER) `#(track-start ,name)))
+  (gen_server:cast (SERVER) `#(track-start ,name)))
 
 (defun stop-track (name)
-  (gen_server:call (SERVER) `#(track-stop ,name)))
+  (gen_server:cast (SERVER) `#(track-stop ,name)))
 
 (defun list ()
   (gen_server:call (SERVER) `#(tracks-names)))
@@ -140,7 +159,10 @@
   (mref (data name) 'current-beat))
 
 (defun time-change (name time-sig)
-  (gen_server:call (SERVER) `#(track-time-change ,name ,time-sig)))
+  (gen_server:cast (SERVER) `#(track-time-change ,name ,time-sig)))
+
+(defun tempo-change (name)
+  (gen_server:cast (SERVER) `#(track-tempo-change ,name ,(bpm))))
 
 (defun export-track (name)
   ;; TODO: save term data to temp file
@@ -149,6 +171,12 @@
 (defun dump ()
   ;; TODO: save ets table to temp file
   'todo)
+
+;; Aliases to parent module
+
+(defun bpm () (undermidi.clock.ext:bpm))
+(defun bpm (last-n) (undermidi.clock.ext:bpm last-n))
+(defun bpm-max () (undermidi.clock.ext:bpm-max))
 
 ;;;;;::=---------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   metadata API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -176,4 +204,48 @@
 ;;;;;::=-------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   utility / support functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=-------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Low-level
+
+(defun add-row (data)
+  (ets:insert (table-name) `#(,(mref data 'name) ,data)))
+
+(defun get-row (track-name)
+  (ets:lookup_element (table-name) track-name 2))
+
+(defun update-row (track-name data)
+  (ets:update_element (table-name) track-name `#(2 ,data)))
+
+(defun merge-row (track-name new-data)
+  (update-row track-name (maps:merge (get-row track-name) new-data)))
+
+(defun get-rows ()
+  (lists:map (lambda (row) (element 2 row))
+             (ets:tab2list (table-name))))
+
+;; Wrappers
+
+(defun add-track (track-name time-sig)
+  (add-row (init-row track-name time-sig)))
+
+(defun track (track-name)
+  (get-row track-name))
+
+(defun get-names ()
+  (lists:map (lambda (data) (mref data 'name))
+             (get-rows)))
+
+(defun add-time-change (track-name time-sig)
+  (let* ((old-data (get-row track-name))
+         (new-time-sigs (lists:append (mref old-data 'time-sigs)
+                                      `(#(,time-sig ,(erlang:timestamp)))))
+         (new-data (maps:merge old-data `#m(time-sigs ,new-time-sigs))))
+    (update-row track-name new-data)))
+
+(defun add-tempo-change (track-name)
+  (let* ((old-data (get-row track-name))
+         (new-tempos (lists:append (mref old-data 'bpms)
+                                   `(#(,(bpm) ,(erlang:timestamp)))))
+         (new-data (maps:merge old-data `#m(bpms ,new-tempos))))
+    (update-row track-name new-data)))
 

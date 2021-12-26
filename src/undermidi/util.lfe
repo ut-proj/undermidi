@@ -223,7 +223,7 @@
     (lists:reverse (lists:seq end start))))
 
 (defun table-info
-  ((table-name)
+  ((table-name) (when (is_atom table-name))
    (let ((info (ets:info table-name)))
      (case info
        ('undefined '())
