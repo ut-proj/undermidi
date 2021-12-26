@@ -58,6 +58,7 @@
 (defun play
   ((`#m(notes-on ,on notes-off ,off) duration)
    (undermidi:send on)
+   ;; TODO: do a scheduled send instead of a sleep!
    (timer:sleep duration)
    (undermidi:send off)))
 
