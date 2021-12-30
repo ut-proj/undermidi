@@ -198,13 +198,13 @@
     (cond
      ((not (is_map last-tr))
       0)
-     ((== (mref last-tr 'action) 'stop)
+     ((transport-stopped? tr)
       (let* ((start-time (mref (car tr) 'time))
-             (run-time (/ (timer:now_diff (mref last-tr 'time) start-time) 60000000)))
-        (floor (* run-time (bpm)))))
+             (end-time (mref last-tr 'time)))
+        (calc-beats end-time start-time)))
      ('true
-      (let ((run-time (/ (timer:now_diff (erlang:timestamp) (mref last-tr 'time)) 60000000)))
-        (floor (* run-time (bpm))))))))
+      (let ((start-time (mref last-tr 'time)))
+        (calc-beats (erlang:timestamp) start-time))))))
 
 (defun duration ()
   ;; TODO: take into account all transport stop/starts
@@ -216,14 +216,12 @@
                 ((not (is_map last-tr))
                  "00:00:00")
                 ((== (mref last-tr 'action) 'stop)
-                 (let* ((start-time (mref (car tr) 'time))
-                        (ms (timer:now_diff (mref last-tr 'time) start-time))
-                        (time (calendar:seconds_to_time (floor (/ ms 1000000)))))
-                   (io_lib:format "~B:~B:~B" (tuple_to_list time))))
+                 (let ((start-time (mref (car tr) 'time))
+                       (end-time (mref last-tr 'time)))
+                   (um.time:duration end-time start-time #(formatted))))
                 ('true
-                 (let* ((ms (timer:now_diff (erlang:timestamp) started))
-                        (time (calendar:seconds_to_time (floor (/ ms 1000000)))))
-                   (io_lib:format "~B:~B:~B" (tuple_to_list time)))))))))
+                 (let ((end-time (erlang:timestamp)))
+                   (um.time:duration end-time started #(formatted)))))))))
 
 (defun time-change (time-sig)
   (gen_server:cast (SERVER) `#(track-time-change ,time-sig)))
@@ -273,7 +271,7 @@
   (gen_server:call (SERVER) #(state)))
 
 ;;;;;::=-------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;::=-   utility / support functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;::=-   Database functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=-------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Low-level data functions
@@ -353,7 +351,9 @@
                    (new-data (maps:merge old-data `#m(transport ,new-transport))))
               (update-row track-name new-data))))))
 
-;; General utility functions
+;;;;;::=-------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;::=-   utility / support functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=-------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun first-transport (transport)
   (if (== transport '())
@@ -384,3 +384,6 @@
   (if (== transport '())
     #(error no-transport-data)
     (mref (lists:last transport) 'action)))
+
+(defun calc-beats (end-ts start-ts)
+  (floor (* (um.time:duration end-ts start-ts #(minutes)) (bpm))))

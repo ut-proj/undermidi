@@ -40,7 +40,7 @@ show-arch-bin:
 clean-all: clean-go clean
 	@rm -rf _build rebar.lock
 
-.PHONY: default run build build-go clean-go clean-all download 
+.PHONY: default run build build-go clean-go clean-all download test
 
 #############################################################################
 ###   Erlang Targets   ######################################################
@@ -53,6 +53,8 @@ run:
 	@rm -rf _build/default/lib/undermidi
 	@rebar3 undermidi
 
+test:
+	@rebar3 as test test
 
 #############################################################################
 ###   Go Targets   ##########################################################
