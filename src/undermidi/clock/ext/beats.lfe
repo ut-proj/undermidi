@@ -18,7 +18,7 @@
 (defun default-time-sig () #(4 4))
 
 (defun table-options ()
-  '(set named_table public))
+  '(set named_table public #(write_concurrency true) #(read_concurrency true)))
 
 (defun initial-state ()
   `#m(current-track 'undefined
@@ -32,7 +32,8 @@
     `#m(name ,name
         created-at ,now
         time-sigs (#(,time-sig ,now))
-        bpms (#(,(bpm) ,now)))))
+        bpms (#(,(bpm) ,now))
+        transport ())))
 
 (defun unknown-command (data)
   `#(error ,(lists:flatten (++ "Unknown command: " data))))
@@ -69,10 +70,10 @@
   ((`#(track-current ,name) state)
   `#(noreply ,(maps:merge state `#m(current-track ,name))))
   ((`#(track-start) (= `#m(current-track ,name) state))
-   (merge-row name `#m(started-at ,(erlang:timestamp)))
+   (log-debug "~p" (list (transport-start name)))
   `#(noreply ,state))
-  ((`#(track-stop ,name) (= `#m(current-track ,name) state))
-   (merge-row name `#m(stopped-at ,(erlang:timestamp)))
+  ((`#(track-stop) (= `#m(current-track ,name) state))
+   (transport-stop name)
   `#(noreply ,state))
   ((`#(track-time-change ,time-sig) (= `#m(current-track ,name) state))
    (add-time-change name time-sig)
@@ -130,7 +131,8 @@
 ;;;;;::=------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun new-track (name)
-  (new-track name (default-time-sig)))
+  (new-track name (default-time-sig))
+  (set-track name))
 
 (defun new-track (name time-sig)
   (gen_server:cast (SERVER) `#(track-create ,name ,time-sig)))
@@ -139,9 +141,11 @@
   (gen_server:cast (SERVER) `#(track-current ,name)))
 
 (defun start-track ()
+  (um:rt-start)
   (gen_server:cast (SERVER) `#(track-start)))
 
 (defun stop-track ()
+  (um:rt-stop)
   (gen_server:cast (SERVER) `#(track-stop)))
 
 (defun list ()
@@ -153,14 +157,27 @@
      base
      `#m(current-beat ,(beat)
          current-measure ,(measure)
-         duration ,(duration)))))
+         duration ,(duration)
+         running? ,(started?)))))
 
 (defun track ()
   (gen_server:call (SERVER) `#(track-name)))
 
-(defun started-at ()
-  (mref (gen_server:call (SERVER) `#(track-data)) 'started-at))
+(defun transport ()
+  (mref (gen_server:call (SERVER) `#(track-data)) 'transport))
 
+(defun started? ()
+  (transport-running? (transport)))
+
+(defun stopped? ()
+  (transport-stopped? (transport)))
+
+(defun started-at ()
+  (let ((first (first-transport (transport))))
+    (case first
+      ('() #(error not-started))
+      (_ (mref first 'time)))))
+   
 (defun time-sig ()
   (element 1 (lists:last (mref (gen_server:call (SERVER) `#(track-data))
                                'time-sigs))))
@@ -169,19 +186,44 @@
   (element 1 (time-sig)))
 
 (defun measure ()
-  (+ 1 (floor (/ (beat) (measure-length)))))
+  (let ((b (beat)))
+    (if (== b 0)
+      0
+      (+ 1 (floor (/ b (measure-length)))))))
 
 (defun beat ()
-  ;; TODO: take into account all tempo changes
-  (let* ((now (erlang:timestamp))
-         (start (started-at))
-         (run-time (/ (timer:now_diff now start) 60000000)))
-    (floor (* run-time (bpm)))))
+  ;; TODO: take into account all tempo changes, transport stop/starts, etc.
+  (let* ((tr (transport))
+         (last-tr (last-transport tr)))
+    (cond
+     ((not (is_map last-tr))
+      0)
+     ((== (mref last-tr 'action) 'stop)
+      (let* ((start-time (mref (car tr) 'time))
+             (run-time (/ (timer:now_diff (mref last-tr 'time) start-time) 60000000)))
+        (floor (* run-time (bpm)))))
+     ('true
+      (let ((run-time (/ (timer:now_diff (erlang:timestamp) (mref last-tr 'time)) 60000000)))
+        (floor (* run-time (bpm))))))))
 
 (defun duration ()
-  (let* ((ms (timer:now_diff (erlang:timestamp) (started-at)))
-         (time (calendar:seconds_to_time (floor (/ ms 1000000)))))
-    (io_lib:format "~B:~B:~B" (tuple_to_list time))))
+  ;; TODO: take into account all transport stop/starts
+  (case (started-at)
+    (`#(error ,_) "00:00:00")
+    (started (let* ((tr (transport))
+                    (last-tr (last-transport tr)))
+               (cond
+                ((not (is_map last-tr))
+                 "00:00:00")
+                ((== (mref last-tr 'action) 'stop)
+                 (let* ((start-time (mref (car tr) 'time))
+                        (ms (timer:now_diff (mref last-tr 'time) start-time))
+                        (time (calendar:seconds_to_time (floor (/ ms 1000000)))))
+                   (io_lib:format "~B:~B:~B" (tuple_to_list time))))
+                ('true
+                 (let* ((ms (timer:now_diff (erlang:timestamp) started))
+                        (time (calendar:seconds_to_time (floor (/ ms 1000000)))))
+                   (io_lib:format "~B:~B:~B" (tuple_to_list time)))))))))
 
 (defun time-change (time-sig)
   (gen_server:cast (SERVER) `#(track-time-change ,time-sig)))
@@ -234,7 +276,7 @@
 ;;;::=-   utility / support functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=-------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Low-level
+;; Low-level data functions
 
 (defun add-row (data)
   (ets:insert (table-name) `#(,(mref data 'name) ,data)))
@@ -252,7 +294,7 @@
   (lists:map (lambda (row) (element 2 row))
              (ets:tab2list (table-name))))
 
-;; Wrappers
+;; Wrapper data functions
 
 (defun add-track (track-name time-sig)
   (add-row (init-row track-name time-sig)))
@@ -265,6 +307,7 @@
              (get-rows)))
 
 (defun add-time-change (track-name time-sig)
+  ;; TODO: don't add a time change if new == last
   (let* ((old-data (get-row track-name))
          (new-time-sigs (lists:append (mref old-data 'time-sigs)
                                       `(#(,time-sig ,(erlang:timestamp)))))
@@ -272,8 +315,72 @@
     (update-row track-name new-data)))
 
 (defun add-tempo-change (track-name)
+  ;; TODO: don't add a tempo change if new == last
   (let* ((old-data (get-row track-name))
          (new-tempos (lists:append (mref old-data 'bpms)
                                    `(#(,(bpm) ,(erlang:timestamp)))))
          (new-data (maps:merge old-data `#m(bpms ,new-tempos))))
     (update-row track-name new-data)))
+
+(defun transport-start (track-name)
+  (let* ((old-data (get-row track-name))
+         (old-transport (mref old-data 'transport)))
+    (log-debug "old-data: ~p" (list old-data))
+    (log-debug "old-transport: ~p" (list old-transport))
+    (if (andalso (=/= (length old-transport) 0)
+                 (== (last-transport-action old-transport) 'start))
+      (let ((err #(error already-started)))
+        (log-error "couldn't start transport: ~p" (list err))
+        err)
+      (let* ((new-transport (lists:append (mref old-data 'transport)
+                                          `(#m(action start
+                                               time ,(erlang:timestamp)))))
+             (new-data (maps:merge old-data `#m(transport ,new-transport))))
+        (log-debug "new-data: ~p" (list new-data))
+        (update-row track-name new-data)))))
+
+(defun transport-stop (track-name)
+  (let* ((old-data (get-row track-name))
+         (old-transport (mref old-data 'transport)))
+    (log-debug "old-data: ~p" (list old-data))
+    (log-debug "old-transport: ~p" (list old-transport))
+    (cond
+     ((=/= (last-transport-action old-transport) 'start) #(error already-stopped))
+     ((== old-data '()) #(error not-started))
+     ('true (let* ((new-transport (lists:append old-transport
+                                                `(#m(action stop
+                                                     time ,(erlang:timestamp)))))
+                   (new-data (maps:merge old-data `#m(transport ,new-transport))))
+              (update-row track-name new-data))))))
+
+;; General utility functions
+
+(defun first-transport (transport)
+  (if (== transport '())
+    '()
+    (car transport)))
+
+(defun last-transport (transport)
+  (if (== transport '())
+    '()
+    (lists:last transport)))
+
+(defun transport-stopped? (transport)
+  (cond
+   ((== transport '()) 'true)
+   ((== (mref (lists:last transport) 'action) 'stop) 'true)
+   ('true 'false)))
+
+(defun transport-running? (transport)
+  (cond
+   ((== transport '()) 'false)
+   ((== (mref (lists:last transport) 'action) 'start) 'true)
+   ('true 'false)))
+
+(defun last-transport-action ()
+  (last-transport-action (mref (data) 'transport)))
+
+(defun last-transport-action (transport)
+  (if (== transport '())
+    #(error no-transport-data)
+    (mref (lists:last transport) 'action)))
