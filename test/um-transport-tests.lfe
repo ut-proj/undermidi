@@ -4,18 +4,39 @@
 
 (include-lib "ltest/include/ltest-macros.lfe")
 
-;;; Test data
+(deftest new-action
+  (let ((action (um.transport:new-action 'start)))
+    (is-equal 'start (mref action 'action))
+    (is-equal 'true (is_tuple (mref action 'time)))))
 
-(defun timestamp1 () #(1640 889112 155492))
-(defun timestamp2 () #(1640 889127 904799))
-(defun timestamp3 () #(1640 889505 518183))
-(defun timestamp4 () #(1640 900000 518183))
-(defun timestamp5 () #(1650 900000 518183))
-
-;;; Tests
-
-(deftest micro->seconds
-  (is-equal 3.0
-            (um.time:micro-> 3000000 #(seconds)))
-  (is-equal 3.0
-            (um.time:->seconds 3000000 #(micro))))
+(deftest transport-operations
+  (let* ((tr '())
+         (stop-1 (um.transport:stop tr))
+         (start-1 (um.transport:start stop-1))
+         (start-2 (um.transport:start start-1))
+         (stop-2 (um.transport:stop start-2))
+         (stop-3 (um.transport:stop stop-2))
+         (start-3 (um.transport:start stop-3))
+         (stop-4 (um.transport:stop start-3)))
+    (is-equal 0 (length stop-1))
+    (is-equal #(error no-transport-data) (um.transport:last-action stop-1))
+    (is-equal 'true (um.transport:stopped? stop-1))
+    (is-equal 'false (um.transport:running? stop-1))
+    (is-equal 1 (length start-1))
+    (is-equal 1 (length start-2))
+    (is-equal 'start (um.transport:last-action start-1))
+    (is-equal 'false (um.transport:stopped? start-1))
+    (is-equal 'true (um.transport:running? start-1))
+    (is-equal 2 (length stop-2))
+    (is-equal 2 (length stop-3))
+    (is-equal 'stop (um.transport:last-action stop-2))
+    (is-equal 'true (um.transport:stopped? stop-2))
+    (is-equal 'false (um.transport:running? stop-2))
+    (is-equal 3 (length start-3))
+    (is-equal 'start (um.transport:last-action start-3))
+    (is-equal 'false (um.transport:stopped? start-3))
+    (is-equal 'true (um.transport:running? start-3))
+    (is-equal 4 (length stop-4))
+    (is-equal 'stop (um.transport:last-action stop-4))
+    (is-equal 'true (um.transport:stopped? stop-2))
+    (is-equal 'false (um.transport:running? stop-2))))

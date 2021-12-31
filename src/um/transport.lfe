@@ -1,22 +1,25 @@
+;;;; A tranport is a sequence of annotated start/stop actions. This module
+;;;; provides functions for working with this abstraction.
 (defmodule um.transport
   (export all))
 
-(defun new (action)
+(defun new-action (action)
   `#m(action ,action
       time ,(erlang:timestamp)))
 
 (defun append
   ((old action) (when (is_atom action))
-   (append (new action)))
+   (append old (new-action action)))
   ((old new) (when (is_map new))
    (append old (list new)))
   ((old new) (when (is_list new))
    (lists:append old new)))
 
 (defun stop (tr)
-  (if (last-action-stop? tr)
-    tr
-    (append tr 'stop)))
+  (cond
+   ((empty? tr) tr)
+   ((last-action-stop? tr) tr)
+   ('true (append tr 'stop))))
 
 (defun start (tr)
   (if (last-action-start? tr)
@@ -24,7 +27,7 @@
     (append tr 'start)))
 
 (defun first (tr)
-  (if (== tr '())
+  (if (empty? tr)
     '()
     (car tr)))
 
@@ -34,17 +37,17 @@
   (mref (first tr) 'time))
 
 (defun last (tr)
-  (if (== tr '())
+  (if (empty? tr)
     '()
     (lists:last tr)))
 
 (defun last-action (tr)
-  (if (== transport '())
+  (if (empty? tr)
     #(error no-transport-data)
     (mref (last tr) 'action)))
 
 (defun last-time (tr)
-  (if (== transport '())
+  (if (empty? tr)
     #(error no-transport-data)
     (mref (last tr) 'time)))
 
@@ -55,7 +58,7 @@
   (== 'start (last-action tr)))
 
 (defun last-kv (tr key val)
-  (if (== transport '())
+  (if (empty? tr)
     #(error no-transport-data)
     (car (lists:filter (lambda (x) (== (mref tr key) val))
                        (lists:nth-last 2 tr)))))
@@ -67,19 +70,22 @@
   (last-kv tr 'action 'start))
 
 (defun last-start-time (tr)
-  (case (last-start)
+  (case (last-start tr)
     ((= `#(error ,_) err) err)
-    (result (mref result) 'time)))
+    (result (mref result 'time))))
 
 (defun last-stop-time (tr)
-  (case (last-stop)
+  (case (last-stop tr)
     ((= `#(error ,_) err) err)
-    (result (mref result) 'time)))
+    (result (mref result 'time))))
 
 (defun running? (tr)
-  (if (== tr '())
+  (if (empty? tr)
     'false
     (last-action-start? tr)))
 
 (defun stopped? (tr)
   (not (running? tr)))
+
+(defun empty? (tr)
+  (== '() tr))
