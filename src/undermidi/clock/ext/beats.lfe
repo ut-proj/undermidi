@@ -355,35 +355,8 @@
 ;;;::=-   utility / support functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=-------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun first-transport (transport)
-  (if (== transport '())
-    '()
-    (car transport)))
-
-(defun last-transport (transport)
-  (if (== transport '())
-    '()
-    (lists:last transport)))
-
-(defun transport-stopped? (transport)
-  (cond
-   ((== transport '()) 'true)
-   ((== (mref (lists:last transport) 'action) 'stop) 'true)
-   ('true 'false)))
-
-(defun transport-running? (transport)
-  (cond
-   ((== transport '()) 'false)
-   ((== (mref (lists:last transport) 'action) 'start) 'true)
-   ('true 'false)))
-
 (defun last-transport-action ()
-  (last-transport-action (mref (data) 'transport)))
-
-(defun last-transport-action (transport)
-  (if (== transport '())
-    #(error no-transport-data)
-    (mref (lists:last transport) 'action)))
+  (um.transport:last-action (mref (data) 'transport)))
 
 (defun calc-beats (end-ts start-ts)
   (floor (* (um.time:duration end-ts start-ts #(minutes)) (bpm))))
