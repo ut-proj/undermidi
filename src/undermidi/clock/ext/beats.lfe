@@ -18,7 +18,7 @@
 (defun default-time-sig () #(4 4))
 
 (defun table-options ()
-  '(set named_table public))
+  '(set named_table public #(write_concurrency true) #(read_concurrency true)))
 
 (defun initial-state ()
   `#m(current-track 'undefined
@@ -26,13 +26,6 @@
       table-name ,(table-name)
       table-desc ,(table-desc)
       controlling-process ,(MODULE)))
-
-(defun init-row (name time-sig)
-  (let ((now (erlang:timestamp)))
-    `#m(name ,name
-        created-at ,now
-        time-sigs (#(,time-sig ,now))
-        bpms (#(,(bpm) ,now)))))
 
 (defun unknown-command (data)
   `#(error ,(lists:flatten (++ "Unknown command: " data))))
@@ -69,10 +62,10 @@
   ((`#(track-current ,name) state)
   `#(noreply ,(maps:merge state `#m(current-track ,name))))
   ((`#(track-start) (= `#m(current-track ,name) state))
-   (merge-row name `#m(started-at ,(erlang:timestamp)))
+   (log-debug "~p" (list (transport-start name)))
   `#(noreply ,state))
-  ((`#(track-stop ,name) (= `#m(current-track ,name) state))
-   (merge-row name `#m(stopped-at ,(erlang:timestamp)))
+  ((`#(track-stop) (= `#m(current-track ,name) state))
+   (transport-stop name)
   `#(noreply ,state))
   ((`#(track-time-change ,time-sig) (= `#m(current-track ,name) state))
    (add-time-change name time-sig)
@@ -129,19 +122,22 @@
 ;;;::=-   Beats API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun new-track (name)
-  (new-track name (default-time-sig)))
+(defun create-track (name)
+  (create-track name (default-time-sig))
+  (set-track name))
 
-(defun new-track (name time-sig)
+(defun create-track (name time-sig)
   (gen_server:cast (SERVER) `#(track-create ,name ,time-sig)))
 
 (defun set-track (name)
   (gen_server:cast (SERVER) `#(track-current ,name)))
 
 (defun start-track ()
+  (um:rt-start)
   (gen_server:cast (SERVER) `#(track-start)))
 
 (defun stop-track ()
+  (um:rt-stop)
   (gen_server:cast (SERVER) `#(track-stop)))
 
 (defun list ()
@@ -153,13 +149,27 @@
      base
      `#m(current-beat ,(beat)
          current-measure ,(measure)
-         duration ,(duration)))))
+         duration ,(duration)
+         running? ,(started?)))))
 
 (defun track ()
   (gen_server:call (SERVER) `#(track-name)))
 
+(defun transport ()
+  (mref (gen_server:call (SERVER) `#(track-data)) 'transport))
+
+(defun started? ()
+  (um.transport:running? (transport)))
+
+(defun stopped? ()
+  (um.transport:stopped? (transport)))
+
 (defun started-at ()
-  (mref (gen_server:call (SERVER) `#(track-data)) 'started-at))
+  (let* ((tr (transport))
+         (first (um.transport:first tr)))
+    (case first
+      ('() #(error not-started))
+      (_ (um.transport:first-start-time tr)))))
 
 (defun time-sig ()
   (element 1 (lists:last (mref (gen_server:call (SERVER) `#(track-data))
@@ -169,19 +179,40 @@
   (element 1 (time-sig)))
 
 (defun measure ()
-  (+ 1 (floor (/ (beat) (measure-length)))))
+  (let ((b (beat)))
+    (if (== b 0)
+      0
+      (+ 1 (floor (/ b (measure-length)))))))
 
 (defun beat ()
-  ;; TODO: take into account all tempo changes
-  (let* ((now (erlang:timestamp))
-         (start (started-at))
-         (run-time (/ (timer:now_diff now start) 60000000)))
-    (floor (* run-time (bpm)))))
+  ;; TODO: take into account all tempo changes, transport stop/starts, etc.
+  (let* ((tr (transport)))
+    (cond
+     ((um.transport:empty? tr)
+      0)
+     ((um.transport:stopped? tr)
+      (let ((start-time (um.transport:first tr))
+            (end-time (um.transport:last-stop-time tr)))
+        (calc-beats end-time start-time)))
+     ('true
+      (let ((start-time (um.transport:last-time tr))
+            (end-time (erlang:timestamp)))
+        (calc-beats end-time start-time))))))
 
 (defun duration ()
-  (let* ((ms (timer:now_diff (erlang:timestamp) (started-at)))
-         (time (calendar:seconds_to_time (floor (/ ms 1000000)))))
-    (io_lib:format "~B:~B:~B" (tuple_to_list time))))
+  ;; TODO: take into account all transport stop/starts
+  (case (started-at)
+    (`#(error ,_) "00:00:00")
+    (started (let* ((tr (transport))
+                    (now (erlang:timestamp)))
+               (cond
+                ((um.transport:empty? tr)
+                 (um.time:duration now now #(formatted)))
+                ((um.transport:stopped? tr)
+                 (let ((start-time (um.transport:first tr))
+                       (end-time (um.transport:last-time tr)))
+                   (um.time:duration end-time start-time #(formatted))))
+                ('true (um.time:duration now started #(formatted))))))))
 
 (defun time-change (time-sig)
   (gen_server:cast (SERVER) `#(track-time-change ,time-sig)))
@@ -231,10 +262,10 @@
   (gen_server:call (SERVER) #(state)))
 
 ;;;;;::=-------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;::=-   utility / support functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;::=-   Database functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=-------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Low-level
+;; Low-level data functions
 
 (defun add-row (data)
   (ets:insert (table-name) `#(,(mref data 'name) ,data)))
@@ -252,10 +283,10 @@
   (lists:map (lambda (row) (element 2 row))
              (ets:tab2list (table-name))))
 
-;; Wrappers
+;; Wrapper data functions
 
 (defun add-track (track-name time-sig)
-  (add-row (init-row track-name time-sig)))
+  (add-row (new-track track-name time-sig)))
 
 (defun track (track-name)
   (get-row track-name))
@@ -265,6 +296,7 @@
              (get-rows)))
 
 (defun add-time-change (track-name time-sig)
+  ;; TODO: don't add a time change if new == last
   (let* ((old-data (get-row track-name))
          (new-time-sigs (lists:append (mref old-data 'time-sigs)
                                       `(#(,time-sig ,(erlang:timestamp)))))
@@ -272,8 +304,59 @@
     (update-row track-name new-data)))
 
 (defun add-tempo-change (track-name)
+  ;; TODO: don't add a tempo change if new == last
   (let* ((old-data (get-row track-name))
          (new-tempos (lists:append (mref old-data 'bpms)
                                    `(#(,(bpm) ,(erlang:timestamp)))))
          (new-data (maps:merge old-data `#m(bpms ,new-tempos))))
     (update-row track-name new-data)))
+
+(defun transport-start (track-name)
+  (let* ((tk (get-row track-name))
+         (tr (track-transport tk)))
+    (if (um.transport:running? tr)
+      #(error already-started)
+      (track-update-transport tk tr track-name 'start))))
+
+(defun transport-stop (track-name)
+  (let* ((tk (get-row track-name))
+         (tr (track-transport tk)))
+    (cond
+     ((empty? tk) #(error not-started))
+     ((um.transport:stopped? tr) #(error already-stopped))
+     ('true (track-update-transport tk tr track-name 'stop)))))
+
+;;;;;::=-------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;::=-   track functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=-------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun new-track (name time-sig)
+  (let ((now (erlang:timestamp)))
+    `#m(name ,name
+        created-at ,now
+        time-sigs (#(,time-sig ,now))
+        bpms (#(,(bpm) ,now))
+        transport ())))
+
+(defun track-transport (tk)
+  (mref tk 'transport))
+
+(defun track-update-transport (old-tk old-tr name action)
+  (let* ((new-tr (um.transport:append old-tr action))
+         (new-tk (maps:merge old-tk `#m(transport ,new-tr))))
+    (log-debug "old-data: ~p" (list old-tk))
+    (log-debug "new-data: ~p" (list new-tk))
+    (update-row name new-tk)))
+
+(defun empty? (tk)
+  (== '() tk))
+
+;;;;;::=-------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;::=-   utility / support functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=-------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun last-transport-action ()
+  (um.transport:last-action (mref (data) 'transport)))
+
+(defun calc-beats (end-ts start-ts)
+  (floor (* (um.time:duration end-ts start-ts #(minutes)) (bpm))))
