@@ -6,12 +6,12 @@
     (stop 0))
   ;; callback implementation
   (export
-    (init 1)
+    (code_change 3))
     (handle_call 3)
     (handle_cast 2)
     (handle_info 2)
+    (init 1)
     (terminate 2)
-    (code_change 3))
   ;; Go server API
   (export
    (send 1))
@@ -79,6 +79,26 @@
     (log-debug "Start state: ~p" (list start-state))
     `#(ok ,(maps:merge state start-state))))
 
+(defun handle_call
+  ;; Management
+  ((`#(state) _from state)
+   `#(reply ,state ,state))
+  ;; Health
+  ((`#(status midiserver) _from state)
+   `#(reply not-implemented ,state))
+  ((`#(status os-process) _from (= `#m(os-pid ,os-pid) state))
+   `#(reply ,(ps-alive? os-pid) ,state))
+  ;; Stop
+  (('stop _from state)
+   (log-notice "Stopping Go MIDI server ...")
+   `#(stop normal ok ,state))
+  ;; Testing / debugging
+  ((`#(echo ,msg) _from state)
+   `#(reply ,msg ,state))
+  ;; Fall-through
+  ((message _from state)
+   `#(reply ,(unknown-command (io_lib:format "~p" `(,message))) ,state)))
+
 (defun handle_cast
   ;; Simple command (new format)
   (((= `(#(command ,_)) cmd) (= `#m(os-pid ,os-pid) state))
@@ -104,26 +124,6 @@
   ((msg state)
    (log-warn "Got undexected cast msg: ~p" (list msg))
    `#(noreply ,state)))
-
-(defun handle_call
-  ;; Management
-  ((`#(state) _from state)
-   `#(reply ,state ,state))
-  ;; Health
-  ((`#(status midiserver) _from state)
-   `#(reply not-implemented ,state))
-  ((`#(status os-process) _from (= `#m(os-pid ,os-pid) state))
-   `#(reply ,(ps-alive? os-pid) ,state))
-  ;; Stop
-  (('stop _from state)
-   (log-notice "Stopping Go MIDI server ...")
-   `#(stop normal ok ,state))
-  ;; Testing / debugging
-  ((`#(echo ,msg) _from state)
-   `#(reply ,msg ,state))
-  ;; Fall-through
-  ((message _from state)
-   `#(reply ,(unknown-command (io_lib:format "~p" `(,message))) ,state)))
 
 (defun handle_info
   ;; Standard-output messages
