@@ -1,6 +1,6 @@
 {application, undermidi,
  [{description, "An LFE MIDI Port Server"},
-  {vsn, "0.2.0-dev"},
+  {vsn, "0.2.0"},
   {registered, [undermidi]},
   {mod, {'undermidi.app', []}},
   {applications,
