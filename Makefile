@@ -25,9 +25,6 @@ build:
 
 rebuild: clean-all build
 
-show-arch-bin:
-	@echo $(DOWNLOAD_BIN)
-
 check:
 	-@rebar3 lfe clean
 	@rebar3 lfe compile
