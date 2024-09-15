@@ -6,7 +6,7 @@
 
 [![][logo]][logo-large]
 
-*An NIF-based LFE MIDI wrapper and server*
+*A set of OTP servers that faciliate live MIDI composition and performance*
 
 ## About
 
@@ -23,23 +23,20 @@ This application assumes that the following are on your system:
 
 * `git`
 * `cmake`, GNU `make`, OS-specific dev libraries that support MIDI
-* A modern install of Erlang (v21+)
+* A modern install of Erlang (v25+)
 * [rebar3](https://www.rebar3.org/) (Erlang build tool)
 
 ## Build & Run
 
-Once you've selected how pull in the Go `midiserver`, you can build and run the
-LFE code:
+The required sources for buidling the Erlang NIF will be downloaded and compiled, and then the Erlang and LFE for undermidi will be compiled, all with the following:
 
 ```shell
 $ rebar3 compile
 ```
 
-If you're using the downloaded binary, you don't need anything special, just run
-this:
-
-``` shell
-$ rebar3 undermidi
+Then start the LFE REPL with prefined options for undermidi:
+```shell
+$ rebar3 as undermidi repl
 ```
 
 Once the LFE REPL is ready, you can start the app:
@@ -48,7 +45,34 @@ Once the LFE REPL is ready, you can start the app:
 (undermidi@local)lfe> (undermidi:start)
 ```
 
-Depending upon the configured log level, you may see a fair amount of output, including the Go MIDI server being started.
+Note that, depending upon the configured log level, you may see a fair amount of output.
+
+## Scratch (temporary)
+
+``` lisp
+(undermidi:start)
+(um:list-devices)
+(set device "model_15")
+(set channel 1)
+(set term (midimsg:note-on channel 48 64))
+(um.ml:send device term)
+(set term (midimsg:note-off channel 48 64))
+(um.ml:send device term)
+
+(undermidi:start)
+(um:list-devices)
+(set device "model_15")
+(set channel 1)
+(um.note:play device channel (um.note:play device channel (um.note:make 'C3)))
+
+(set term (midimsg:note-on channel (mref (um.note:make 'C3) 'pitch) 64))
+(um.ml:send device term)
+
+(set term (midimsg:note-off channel (mref (um.note:make 'C3) 'pitch) 64))
+(timer:apply_after 250 'um.ml 'send (list device term))
+
+(um.ml:send device term)
+```
 
 ## API
 
