@@ -88,4 +88,3 @@ bin/$(BIN):
 	@chmod 755 $(DOWNLOAD_BIN)
 	@echo ">> Moving $(DOWNLOAD_BIN) to ./bin/$(BIN) ..."
 	@mv $(DOWNLOAD_BIN) ./bin/$(BIN)
-

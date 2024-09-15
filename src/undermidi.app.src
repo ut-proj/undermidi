@@ -1,18 +1,16 @@
 {application, undermidi,
- [{description, "An LFE MIDI Port Server"},
+ [{description, "An LFE MIDI Server"},
   {vsn, "0.3.0-dev"},
   {registered, [undermidi]},
   {mod, {'undermidi.app', []}},
   {applications,
    [kernel,
     stdlib,
-    lfe,
-    erlexec
+    lfe
    ]},
   {env,[]},
   {modules, [
-    'undermidi.go.execserver',
-    'undermidi.go.portserver',
+    'undermidi.server',
     'undermidi.clock.ext',
     'undermidi.clock.ext.beats',
     'undermidi.util'

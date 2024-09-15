@@ -8,7 +8,6 @@
   ;; Child API
   (export
    (child-pid 0)
-   (child-port 0)
    (example 1)
    (list-devices 0)
    (midi 1)
@@ -22,9 +21,7 @@
 (include-lib "logjam/include/logjam.hrl")
 
 (defun SERVER () (MODULE))
-;; XXX make the following configurable
-;;(defun go-server () 'undermidi.go.portserver)
-(defun go-server () 'undermidi.go.execserver)
+(defun midi-server () 'undermidi.server)
 (defun liveplay () 'undermidi.liveplay)
 (defun beatracker () 'undermidi.beatracker)
 (defun extclock () 'undermidi.clock.ext)
@@ -39,7 +36,7 @@
   (supervisor:start_link `#(local ,(SERVER)) (MODULE) '()))
 
 (defun stop ()
-  (call (go-server) 'stop)
+  (call (midi-server) 'stop)
   (exit (pid) 'shutdown))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -54,17 +51,14 @@
              ,(child (beatracker))
              ,(child (extclock))
              ,(child (extbeats))
-             ,(child (go-server))))))
+             ,(child (midi-server))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun child-pid ()
-  (call (go-server) 'pid))
-
-(defun child-port ()
-  (call (go-server) 'port))
+  (call (midi-server) 'pid))
 
 (defun example
   ((`#m(device ,dev channel ,ch pitch ,p velocity ,v duration ,dur))
@@ -87,10 +81,10 @@
   (send #(command ping)))
 
 (defun send (msg)
-  (call (go-server) 'send msg))
+  (call (midi-server) 'send msg))
 
 (defun state ()
-  (call (go-server) 'state))
+  (call (midi-server) 'state))
 
 (defun stop-port ()
   (send #(command stop)))
