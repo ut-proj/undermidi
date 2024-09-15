@@ -1,0 +1,3 @@
+-define(LIB_NAME, "libsp_midi").
+-define(LIB_DIR, "src").
+-define(LIB, filename:join([?LIB_DIR, ?LIB_NAME])).
