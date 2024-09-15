@@ -1,4 +1,6 @@
-(defmodule undermidi.server
+;;;; This gen_server is for keeping track of which devices a user is writing
+;;;; MIDI to, and to what channels on those devices.
+(defmodule undermidi.devices
   (behaviour gen_server)
   ;; gen_server implementation
   (export
@@ -28,7 +30,7 @@
 
 (defun SERVER () (MODULE))
 (defun DELIMITER () #"\n")
-
+(defun NAME () "MIDI devices manager")
 (defun initial-state ()
   `#m(opts ()
       current-channel 1
@@ -43,7 +45,7 @@
 ;;;;;::=-----------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun start_link ()
-  (log-info "Starting midiserver controller ...")
+  (log-info "Starting ~s ..." (list (NAME)))
   (gen_server:start_link `#(local ,(SERVER))
                          (MODULE)
                          (initial-state)
@@ -70,7 +72,7 @@
    `#(reply not-implemented ,state))
   ;; Stop
   (('stop _from state)
-   (log-notice "Stopping Go MIDI server ...")
+   (log-notice "Stopping ~s ..." (list (NAME)))
    `#(stop normal ok ,state))
   ;; Testing / debugging
   ((`#(echo ,msg) _from state)
@@ -80,14 +82,9 @@
    `#(reply ,(unknown-command (io_lib:format "~p" `(,message))) ,state)))
 
 (defun handle_cast
-  ;; Simple command (new format)
+  ;; Command support
   (((= `(#(command ,_)) cmd) state)
    (log-warn "Unsupported server command: ~p" `(,cmd))
-   `#(noreply ,state))
-  ;; MIDI data
-  (((= `#(midi ,_) midi) state)
-   (log-debug "Sending MIDI message: ~s" `(,(lfe_io_format:fwrite1 "~p" `(,midi))))
-   (log-warn "Unsupported MIDI message: ~p" `(,midi))
    `#(noreply ,state))
   ((msg state)
    (log-warn "Got undexected cast msg: ~p" (list msg))
@@ -107,10 +104,10 @@
    (log-warn "~p: exited with status ~p" `(,port ,exit-status))
    `#(noreply ,state))
   ((`#(EXIT ,_from normal) state)
-   (logger:info "midiserver controller is exiting (normal).")
+   (logger:info "~s is exiting (normal)." (list (NAME)))
    `#(noreply ,state))
   ((`#(EXIT ,_from shutdown) state)
-   (logger:info "midiserver controller is exiting (shutdown).")
+   (logger:info "~s is exiting (shutdown)." (list (NAME)))
    `#(noreply ,state))
   ((`#(EXIT ,pid ,reason) state)
    (log-notice "Process ~p exited! (Reason: ~p)" `(,pid ,reason))
@@ -121,9 +118,8 @@
    `#(noreply ,state)))
 
 (defun terminate
-  ((_reason `#m(os-pid ,os-pid))
-   (log-notice "Terminating midiserver controller ...")
-   (catch (exec:stop os-pid))
+  ((_reason _state)
+   (log-notice "Terminating ~s ..." (list (NAME)))
    'ok))
 
 (defun code_change (_old-version state _extra)
