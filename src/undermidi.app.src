@@ -1,5 +1,5 @@
 {application, undermidi,
- [{description, "An LFE MIDI Server"},
+ [{description, "A set of OTP servers that faciliate live MIDI composition and performance"},
   {vsn, "0.3.0-dev"},
   {registered, [undermidi]},
   {mod, {'undermidi.app', []}},
@@ -10,7 +10,7 @@
    ]},
   {env,[]},
   {modules, [
-    'undermidi.server',
+    'undermidi.devices',
     'undermidi.clock.ext',
     'undermidi.clock.ext.beats',
     'undermidi.util'
