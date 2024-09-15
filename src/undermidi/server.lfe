@@ -1,4 +1,4 @@
-(defmodule undermidi.go.execserver
+(defmodule undermidi.server
   (behaviour gen_server)
   ;; gen_server implementation
   (export
@@ -6,12 +6,12 @@
     (stop 0))
   ;; callback implementation
   (export
-    (code_change 3))
+    (code_change 3)
     (handle_call 3)
     (handle_cast 2)
     (handle_info 2)
     (init 1)
-    (terminate 2)
+    (terminate 2))
   ;; Go server API
   (export
    (send 1))
@@ -39,16 +39,8 @@
 (defun DELIMITER () #"\n")
 
 (defun initial-state ()
-  (let ((log-level (logjam:read-log-level "config/sys.config"))
-        (node-name (io_lib:format "~s" `(,(erlang:node)))))
     `#m(opts ()
-        args ("-loglevel" ,(go-log-level log-level)
-              "-daemon" "-log-reportcaller"
-              "-midi-in" ,(undermidi.go.shared:midi-in)
-              "-remote-node" ,node-name)
-        binary ,(undermidi.go.shared:midiserver)
-        pid undefined
-        os-pid undefined)))
+        pid undefined))
 
 (defun genserver-opts () '())
 (defun unknown-command (data)
@@ -73,11 +65,9 @@
 ;;;;;::=---------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun init (state)
-  (log-debug "Initialising midiserver controller ...")
+  (log-debug "Initialising ...")
   (erlang:process_flag 'trap_exit 'true)
-  (let ((start-state (start-midiserver (self) state)))
-    (log-debug "Start state: ~p" (list start-state))
-    `#(ok ,(maps:merge state start-state))))
+  `#(ok ,state))
 
 (defun handle_call
   ;; Management
@@ -86,8 +76,6 @@
   ;; Health
   ((`#(status midiserver) _from state)
    `#(reply not-implemented ,state))
-  ((`#(status os-process) _from (= `#m(os-pid ,os-pid) state))
-   `#(reply ,(ps-alive? os-pid) ,state))
   ;; Stop
   (('stop _from state)
    (log-notice "Stopping Go MIDI server ...")
@@ -101,26 +89,14 @@
 
 (defun handle_cast
   ;; Simple command (new format)
-  (((= `(#(command ,_)) cmd) (= `#m(os-pid ,os-pid) state))
-   (let ((hex-msg (hex-encode cmd)))
-     (exec:send os-pid hex-msg)
-     `#(noreply ,state)))
-  ;; Command with args
-  (((= `(#(command ,_) #(args ,_)) cmd) (= `#m(os-pid ,os-pid) state))
-   (let ((hex-msg (hex-encode cmd)))
-     (exec:send os-pid hex-msg)
-     `#(noreply ,state)))
+  (((= `(#(command ,_)) cmd) state)
+   (log-warn "Unsupported server command: ~p" `(,cmd))
+   `#(noreply ,state))
   ;; MIDI data
-  (((= `#(midi ,_) midi) (= `#m(os-pid ,os-pid) state))
+  (((= `#(midi ,_) midi) state)
    (log-debug "Sending MIDI message: ~s" `(,(lfe_io_format:fwrite1 "~p" `(,midi))))
-   (let ((hex-msg (hex-encode midi)))
-     (exec:send os-pid hex-msg)
-     `#(noreply ,state)))
-  ;; Go server commands - old format, still used
-  (((= `#(command ,_) cmd) (= `#m(os-pid ,os-pid) state))
-   (let ((hex-msg (hex-encode cmd)))
-     (exec:send os-pid hex-msg)
-     `#(noreply ,state)))
+   (log-warn "Unsupported MIDI message: ~p" `(,midi))
+   `#(noreply ,state))
   ((msg state)
    (log-warn "Got undexected cast msg: ~p" (list msg))
    `#(noreply ,state)))
@@ -133,18 +109,6 @@
   ;; Standard-error messages
   ((`#(stderr ,_pid ,msg) state)
    (io:format "~s" (list (binary_to_list msg)))
-   `#(noreply ,state))
-  ;; Port EOL-based messages
-  ((`#(,port #(data #(eol ,msg))) state) (when (is_port port))
-   (log-info (sanitize-midiserver-msg msg))
-   `#(noreply ,state))
-  ;; Port line-based messages
-  ((`#(,port #(data #(,line-msg ,msg))) state) (when (is_port port))
-   (log-info "Unknown line message:~p~s" `(,line-msg ,(sanitize-midiserver-msg msg)))
-   `#(noreply ,state))
-  ;; General port messages
-  ((`#(,port #(data ,msg)) state) (when (is_port port))
-   (log-info "Message from midiserver port:~n~s" `(,(sanitize-midiserver-msg msg)))
    `#(noreply ,state))
   ;; Exit-handling
   ((`#(,port #(exit_status ,exit-status)) state) (when (is_port port))
@@ -192,11 +156,6 @@
 ;;;::=-   management API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun start-midiserver
-  ((mgr-pid (= `#m(args ,args binary ,bin) state))
-   (log-debug "Starting Go midiserver executable ...")
-   (maps:merge state (run mgr-pid bin args))))
-
 (defun state ()
   (gen_server:call (SERVER) #(state)))
 
@@ -231,66 +190,7 @@
 ;;;::=-   utility / support functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=-------------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun sanitize-midiserver-msg (msg)
-  ;;(log-debug "Binary message: ~p" `(,msg))
-  (clj:-> msg
-          (binary_to_list)
-          (string:replace "\\" "")
-          (string:trim)))
-
-(defun join-cmd-args (cmd args)
-  (clj:-> (list cmd)
-          (lists:append args)
-          (string:join " ")))
-
-(defun default-run-opts (mgr-pid)
-  `(stdin
-    pty
-    #(stdout ,mgr-pid)
-    #(stderr ,mgr-pid)
-    monitor))
-
-(defun run-opts (mgr-pid opts)
-  (if (maps:is_key 'run-opts opts)
-    (mref opts 'run-opts)
-    (default-run-opts mgr-pid)))
-
 (defun has-str? (string pattern)
   (case (string:find string pattern)
     ('nomatch 'false)
     (_ 'true)))
-
-(defun ps-alive? (os-pid)
-  (has-str? (ps-pid os-pid) (integer_to_list os-pid)))
-
-(defun ps-pid (pid-str)
-  (os:cmd (++ "ps -o pid -p" pid-str)))
-
-(defun run (mgr-pid cmd args)
-  (run mgr-pid cmd args #m()))
-
-(defun run (mgr-pid cmd args opts)
-  (let ((opts (run-opts mgr-pid opts)))
-    (log-debug "Starting OS process ~s with args ~p and opts ~p"
-               (list cmd args opts))
-    (let ((exec-str (join-cmd-args cmd args)))
-      (log-debug "Using exec string: ~s" (list exec-str))
-      (let ((`#(ok ,pid ,os-pid) (exec:run_link exec-str opts)))
-        `#m(pid ,pid os-pid ,os-pid)))))
-
-(defun hex-encode (data)
-  (let* ((bin (erlang:term_to_binary data))
-         (delim (DELIMITER))
-         (hex-msg (binary ((undermidi.util:bin->hex bin) binary) (delim binary))))
-    (log-debug "Created hex msg: ~p" (list hex-msg))
-    hex-msg))
-
-(defun go-log-level (lfe-level)
-  (case lfe-level
-    ('all "trace")
-    ('debug "debug")
-    ('info "info")
-    ('notice "warning")
-    ('warning "warning")
-    ('error "error")
-    (_ "fatal")))

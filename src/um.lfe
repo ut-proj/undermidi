@@ -26,7 +26,6 @@
    (rt-tick 0)))
 
 (include-lib "undermidi/include/notes.lfe")
-
 (include-lib "logjam/include/logjam.hrl")
 
 ;;; Chord convenience aliases
