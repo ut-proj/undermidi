@@ -6,37 +6,25 @@
 
 [![][logo]][logo-large]
 
-*An LFE MIDI Port Server*
+*An NIF-based LFE MIDI wrapper and server*
+
+## About
+
+undermidi supports two use cases, both of which utilise the Erlang term MIDI message formats defined in [midilib](https://github.com/erlsci/midilib):
+
+* direct calls to MIDI devices
+* a MIDI server that XXX
+
+Note that the calls made to midilib use the `midibin` module for binary MIDI messages, which in turn uses the [Erlang MIDI NIF]() provided by the [Sonic Pi project]().
 
 ## Dependencies & Setup
 
 This application assumes that the following are on your system:
 
 * `git`
-* GNU `make`
-* A modern install of Erlang (v20+)
+* `cmake`, GNU `make`, OS-specific dev libraries that support MIDI
+* A modern install of Erlang (v21+)
 * [rebar3](https://www.rebar3.org/) (Erlang build tool)
-
-If you would like to (or need to) build the Golang `midiserver` binary yourself,
-You'll also need the following
-* Golang
-* header files from `libasound2-dev` (if you're compiling on Linux)
-
-You can then run:
-
-``` shell
-$ make build
-```
-
-(Note that this project's `rebar.config.script` will set the required Go environment
-variables.)
-
-If you would like to download [one of the binaries](https://github.com/ut-proj/midiserver/releases)
-instead, you can run this instead:
-
-```shell
-$ make download
-```
 
 ## Build & Run
 
@@ -53,17 +41,6 @@ this:
 ``` shell
 $ rebar3 undermidi
 ```
-
-However, if you're building from source, you'll need to set an environment
-variable:
-
-``` shell
-$ USE_GO_SRC=true rebar3 undermidi
-```
-
-Note that in both cases LFE (really, its REPL) is being run as a distributed
-Erlang node. The midiserver, while written in Go, is run as another Erlang node,
-thus supporting two-way communications between the two.
 
 Once the LFE REPL is ready, you can start the app:
 
