@@ -13,33 +13,67 @@ on:
 
 jobs:
 
-  core-build:
+  new-builds:
     name: Erlang ${{ matrix.otp_version }} build
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        otp_version: [22, 23, 24, 25]
-        os: [ubuntu-latest]
+        otp_version: ['27']
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - uses: erlef/setup-beam@v1
       with:
         otp-version: ${{ matrix.otp_version }}
-        rebar3-version: '3.17'
+        rebar3-version: '3.24'
     - name: Check rebar3 Version
       run: rebar3 --version
     - name: Compile
-      run: DIAGNOSTIC=1 rebar3 compile
-#    - name: Xref Checks
-#      run: rebar3 xref
-#    - name: Dialyzer
-#      run: rebar3 dialyzer
-    - name: Compile Test Profile
+      run: rebar3 compile
+    - name: Xref Checks
+      run: rebar3 xref
+    #- name: Dialyzer
+    #  run: rebar3 dialyzer
+    - name: Compile Tests
       run: rebar3 as test compile
     - name: Run Unit Tests
       run: rebar3 as test lfe ltest -tunit
+    - name: Run System Tests
+      run: rebar3 as test lfe ltest -tsystem
+    - name: Run Integration Tests
+      run: rebar3 as test lfe ltest -tintegration
+    - name: Test Coverage
+      run: rebar3 as test do proper -c, cover -v --min_coverage=0
+
+  core-builds:
+    name: Erlang ${{ matrix.otp_version }} build
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        otp_version: ['26', '25']
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: erlef/setup-beam@v1
+      with:
+        otp-version: ${{ matrix.otp_version }}
+        rebar3-version: '3.22'
+    - name: Check rebar3 Version
+      run: rebar3 --version
+    - name: Compile
+      run: rebar3 compile
+    - name: Xref Checks
+      run: rebar3 xref
+    #- name: Dialyzer
+    #  run: rebar3 dialyzer
+    - name: Compile Tests
+      run: rebar3 as test compile
+    - name: Run Unit Tests
+      run: rebar3 as test lfe ltest -tunit
+    - name: Run System Tests
+      run: rebar3 as test lfe ltest -tsystem
     - name: Run Integration Tests
       run: rebar3 as test lfe ltest -tintegration
     - name: Test Coverage
