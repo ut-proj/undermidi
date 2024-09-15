@@ -1,4 +1,5 @@
 .DS_Store
+src/libsp_midi.*
 /apps/ports/priv/
 .rebar3
 _*
