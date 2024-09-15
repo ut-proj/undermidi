@@ -393,21 +393,48 @@ C       0
     (list-comp ((<- n names))
       (mref all n))))
 
-(defun octave
-  ((note-name oct) (when (is_atom note-name))
-   (octave (get-pitch note-name) oct))
-  ((pitch oct)
-   (+ pitch (* 12 (+ 1 oct)))))
+(defun make
+  ((names) (when (is_list names))
+   (list-comp ((<- n names)) (make n)))
+  ((name)
+   (make name 64)))
 
-(defun duplicate (notes times)
-  (lists:flatten
-   (lists:duplicate times notes)))
+(defun make(name velocity)
+  (make name velocity 100))
+
+(defun make (name velocity duration)
+  `#m(pitch ,(get-pitch name)
+      velocity ,velocity
+      duration ,duration))
 
 (defun play
-  ((note-name velocity duration) (when (is_atom note-name))
-   (play (get-pitch note-name) velocity duration))
-  ((pitch velocity duration)
-    (undermidi:send (midimsg:note-on pitch velocity))
-    ;; TODO: do a scheduled send instead of a sleep!
-    (timer:sleep duration)
-    (undermidi:send (midimsg:note-off pitch))))
+  ((device channel notes) (when (is_list notes))
+   (play-notes device channel notes))
+  ((device channel note) (when (is_map note))
+   (play-note device channel note)))
+
+(defun play-note
+  ((device channel `#m(pitch ,p velocity ,v duration ,d))
+   (let ((note-on (midimsg:note-on channel p v))
+         (note-off (midimsg:note-on channel p 0)))
+     (um.ml:send device note-on)
+     (timer:apply_after d 'um.ml 'send `(,device ,note-off)))))
+
+(defun play-notes (device channel notes)
+  (play-notes device channel notes 250))
+
+(defun play-notes (device channel notes delay)
+  (play-notes device channel notes delay 0))
+
+(defun play-notes (device channel notes delay repeats)
+  (play-notes device channel notes delay repeats '()))
+
+(defun play-notes
+  ((device channel '() _ 0 _)
+   'ok)
+  ((device channel '() delay repeats acc)
+   (play-notes device channel acc delay (- repeats 1) '()))
+  ((device channel `(,head . ,tail) delay repeats acc)
+   (play-note device channel head)
+   (timer:sleep delay)
+   (play-notes device channel tail delay repeats (++ acc `(,head)))))

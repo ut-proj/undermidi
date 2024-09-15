@@ -25,7 +25,6 @@
 (defun set-pid (a) (sp_midi:set_this_pid a))
 
 (defun devices ()
-  (initialise)
   (refresh)
   `#m(inputs ,(lists:enumerate (inputs))
       outputs ,(lists:enumerate (outputs))))

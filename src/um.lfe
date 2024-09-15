@@ -1,6 +1,9 @@
 ;;;; undermidi module for music functions specific to undermidi
 (defmodule um
   (export
+   (list-devices 0))
+  ;; !!DEPRECATED!!
+  (export
    (bank-select 2) (bank-select 3)
    (cycle-cc 4)
    (play-chord 3) (play-chord 5) (play-chord 6)
@@ -27,6 +30,16 @@
 
 (include-lib "undermidi/include/notes.lfe")
 (include-lib "logjam/include/logjam.hrl")
+
+;;; New API
+
+(defun list-devices ()
+  (um.nif:devices))
+
+;;; !!DANGER!! -- everything below this line is going to change,
+;;;               anything from function names and args to module
+;;;               of even the function's existence itself.
+
 
 ;;; Chord convenience aliases
 

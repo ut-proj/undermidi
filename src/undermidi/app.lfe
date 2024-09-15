@@ -20,9 +20,11 @@
 
 (defun start (_start-type _start-args)
   (log-info "Starting OTP application ..." '())
+  (um.nif:initialise)
   (undermidi.supervisor:start_link))
 
 (defun stop (_state)
+  (um.nif:deinitialise)
   (undermidi.supervisor:stop)
   'ok)
 
