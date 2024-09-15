@@ -43,25 +43,37 @@ pre_build() {
 
 build() {
     echo "MIDISERVER: Building MIDI NIF ..."
-    cd $SP_BUILD_DIR && \
-        cmake .. && \
-        make
-    cd $ROOT_DIR
+    if [ -e src/libsp_midi.so ]; then
+        echo "** Sonic Pi Erlang NIF library exists; skipping build."
+    else
+        cd $SP_BUILD_DIR && \
+            cmake .. && \
+            make
+        cd $ROOT_DIR
+    fi
 }
 
 install() {
     echo "MIDISERVER: Installing MIDI NIF ..."
-    rm -f src/libsp_midi.*
-    cp ${SP_BUILD_DIR}/libsp_midi.* src
+    if [ -e src/libsp_midi.so ]; then
+        echo "** Sonic Pi Erlang NIF library exists; skipping install."
+    else
+        rm -f src/libsp_midi.*
+        cp ${SP_BUILD_DIR}/libsp_midi.* src
+    fi
 }
 
 post_build() {
     echo "MIDISERVER: Cleaning up MIDI NIF temporary and build directories ..."
     rm -rf $SP_DIR
     if [ $(uname -s) == "Darwin" ]; then
-        cd src && ln -s libsp_midi.dylib libsp_midi.so
+        if [ -e src/libsp_midi.so ]; then
+            echo "** Sonic Pi Erlang NIF library Darwin symlink exists; skipping."
+        else
+            cd src && ln -s libsp_midi.dylib libsp_midi.so
+            cd $ROOT_DIR
+        fi
     fi
-    cd $ROOT_DIR
 }
 
 download
