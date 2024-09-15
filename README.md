@@ -12,10 +12,10 @@
 
 undermidi supports two use cases, both of which utilise the Erlang term MIDI message formats defined in [midilib](https://github.com/erlsci/midilib):
 
-* direct calls to MIDI devices
-* a MIDI server that XXX
+* direct calls to MIDI devices, each call requiring the use of a device and MIDI channel
+* a MIDI device manager that allows calls to be made without explicitly passing the device and MIDI channel every time
 
-Note that the calls made to midilib use the `midibin` module for binary MIDI messages, which in turn uses the [Erlang MIDI NIF]() provided by the [Sonic Pi project]().
+Note that the calls made to midilib use the `midibin` module for binary MIDI messages, which in turn uses the [Erlang MIDI NIF](https://github.com/sonic-pi-net/sonic-pi/tree/dev/app/external/sp_midi) provided by the [Sonic Pi project](https://github.com/sonic-pi-net/sonic-pi).
 
 ## Dependencies & Setup
 
@@ -296,6 +296,6 @@ You may send this message with either the `send-parallel` or the shorter `cast` 
 [gh-actions-badge]: https://github.com/ut-proj/undermidi/workflows/ci%2Fcd/badge.svg
 [gh-actions]: https://github.com/ut-proj/undermidi/actions
 [lfe]: https://github.com/rvirding/lfe
-[lfe badge]: https://img.shields.io/badge/lfe-2.0-blue.svg
-[erlang badge]: https://img.shields.io/badge/erlang-21%20to%2024-blue.svg
+[lfe badge]: https://img.shields.io/badge/lfe-2.1-blue.svg
+[erlang badge]: https://img.shields.io/badge/erlang-25%20to%2027-blue.svg
 [versions]: https://github.com/ut-proj/undermidi/blob/master/.github/workflows/cicd.yml
