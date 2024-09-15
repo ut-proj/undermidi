@@ -12,18 +12,9 @@
     (handle_info 2)
     (init 1)
     (terminate 2))
-  ;; Go server API
-  (export
-   (send 1))
   ;; management API
   (export
    (state 0))
-  ;; health API
-  (export
-   (midiserver-responsive? 0)
-   (healthy? 0)
-   (os-process-alive? 0)
-   (status 0))
   ;; debug API
   (export
     (pid 0)
@@ -39,8 +30,9 @@
 (defun DELIMITER () #"\n")
 
 (defun initial-state ()
-    `#m(opts ()
-        pid undefined))
+  `#m(opts ()
+      current-channel 1
+      pid undefined))
 
 (defun genserver-opts () '())
 (defun unknown-command (data)
@@ -138,43 +130,11 @@
   `#(ok ,state))
 
 ;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;::=-   Go server API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun send (msg)
-  (erlang:process_flag 'trap_exit 'true)
-  (try
-      (gen_server:cast (MODULE) msg)
-    (catch
-      ((tuple 'exit `#(noproc ,_) _stack)
-       (log-err "Go server not running"))
-      ((tuple type value stack)
-       (log-err "Unexpected port error.~ntype: ~p~nvalue: ~p~nstacktrace: ~p"
-                (list type value stack))))))
-
-;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   management API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun state ()
   (gen_server:call (SERVER) #(state)))
-
-;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;::=-   health API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun midiserver-responsive? ()
-  (gen_server:call (SERVER) #(status midiserver)))
-
-(defun healthy? ()
-  (let ((vals (maps:values (status))))
-    (not (lists:member 'false vals))))
-
-(defun os-process-alive? ()
-  (gen_server:call (SERVER) #(status os-process)))
-
-(defun status ()
-  (gen_server:call (SERVER) #(status all)))
 
 ;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   debugging API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
