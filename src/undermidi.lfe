@@ -23,7 +23,6 @@
   (let ((cfg-file "config/sys.config"))
     (io:format "~s" (list (undermidi.util:banner)))
     (logjam:set-config `#(path ,cfg-file))
-    ;;(logger:set_application_level 'undermidi (logjam:read-log-level cfg-file))
     (log-notice "Starting undermidi, version ~s ..." (list (undermidi.util:version)))
     (application:ensure_all_started 'undermidi)
     (log-debug "\nVersions:\n~p\n" (list (versions)))))
