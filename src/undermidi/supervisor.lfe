@@ -21,7 +21,7 @@
 (include-lib "logjam/include/logjam.hrl")
 
 (defun SERVER () (MODULE))
-(defun midi-server () 'undermidi.server)
+(defun midi-devices () 'undermidi.devices)
 (defun liveplay () 'undermidi.liveplay)
 (defun beatracker () 'undermidi.beatracker)
 (defun extclock () 'undermidi.clock.ext)
@@ -36,7 +36,7 @@
   (supervisor:start_link `#(local ,(SERVER)) (MODULE) '()))
 
 (defun stop ()
-  (call (midi-server) 'stop)
+  (call (midi-devices) 'stop)
   (exit (pid) 'shutdown))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -51,14 +51,14 @@
              ,(child (beatracker))
              ,(child (extclock))
              ,(child (extbeats))
-             ,(child (midi-server))))))
+             ,(child (midi-devices))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun child-pid ()
-  (call (midi-server) 'pid))
+  (call (midi-devices) 'pid))
 
 (defun example
   ((`#m(device ,dev channel ,ch pitch ,p velocity ,v duration ,dur))
@@ -81,10 +81,10 @@
   (send #(command ping)))
 
 (defun send (msg)
-  (call (midi-server) 'send msg))
+  (call (midi-devices) 'send msg))
 
 (defun state ()
-  (call (midi-server) 'state))
+  (call (midi-devices) 'state))
 
 (defun stop-port ()
   (send #(command stop)))
