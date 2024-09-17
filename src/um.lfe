@@ -38,7 +38,8 @@
 
 ;;; !!DANGER!! -- everything below this line is going to change,
 ;;;               anything from function names and args to module
-;;;               of even the function's existence itself.
+;;;               of even the function's existence itself is up
+;;;               for grabs ...
 
 
 ;;; Chord convenience aliases
