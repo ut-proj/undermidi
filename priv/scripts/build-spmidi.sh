@@ -8,6 +8,7 @@ SP_DL_DIR=$HOME/.cache/sonic-pi
 SP_UNZIP_DIR=${SP_DL_DIR}/sonic-pi-${SP_VERS_NUM}
 SP_DIR=sp_midi
 SP_BUILD_DIR=${SP_DIR}/build
+SP_METADATA_FILE=priv/sp_metadata.conf
 
 download() {
     echo "MIDISERVER: Downloading Sonic Pi MIDI NIF source ..."
@@ -74,6 +75,7 @@ post_build() {
             cd $ROOT_DIR
         fi
     fi
+    echo "{sonic_pi, [{version, \"$SP_VERS_NUM\"}]}." > $SP_METADATA_FILE
 }
 
 download

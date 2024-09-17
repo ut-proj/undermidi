@@ -38,7 +38,7 @@
   (um.nif:list-devices))
 
 (defun version ()
-  (undermidi.util:version))
+  (undermidi.vers:version))
 
 (defun versions ()
-  (undermidi.util:versions))
+  (undermidi.vers:versions))
