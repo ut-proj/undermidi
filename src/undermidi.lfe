@@ -4,7 +4,10 @@
    (stop 0)
    (restart 0))
   (export
-   (example 0) (example 1)
+   (play-note 2)
+   (play-notes 2) (play-notes 3) (play-notes 4)
+   )
+  (export
    (list-devices 0)
    (version 0)
    (versions 0)))
@@ -15,7 +18,7 @@
   (let ((cfg-file "config/sys.config"))
     (io:format "~s" (list (undermidi.util:banner)))
     (logjam:set-config `#(path ,cfg-file))
-    (log-notice "Starting undermidi, version ~s ..." (list (undermidi.util:version)))
+    (log-notice "Starting undermidi, version ~s ..." (list (undermidi:version)))
     (application:ensure_all_started 'undermidi)
     (log-debug "\nVersions:\n~p\n" (list (versions)))))
 
@@ -26,13 +29,21 @@
   (stop)
   (start))
 
+;;; Notes API
+
+(defun play-note (pid note)
+  (undermidi.device.conn:apply pid 'um.note 'play-note (list (um.note:make note))))
+
+(defun play-notes (pid notes)
+  (undermidi.device.conn:apply pid 'um.note 'play-notes (list (um.note:make notes))))
+
+(defun play-notes (pid notes delay)
+  (undermidi.device.conn:apply pid 'um.note 'play-notes (list (um.note:make notes) delay)))
+
+(defun play-notes (pid notes delay repeats)
+  (undermidi.device.conn:apply pid 'um.note 'play-notes (list (um.note:make notes) delay repeats)))
+
 ;;; Aliases
-
-(defun example ()
-  (example #m(device 0 channel 0 pitch 48 velocity 100 duration 4)))
-
-(defun example (opts)
-  (undermidi.supervisor:example opts))
 
 (defun list-devices ()
   (um.nif:list-devices))

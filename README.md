@@ -63,15 +63,25 @@ Note that, depending upon the configured log level, you may see a fair amount of
 (um:list-devices)
 (set device "model_15")
 (set channel 1)
-(um.note:play device channel (um.note:play device channel (um.note:make 'C3)))
+(um.note:play device channel (um.note:make 'C3))
 
-(set term (midimsg:note-on channel (mref (um.note:make 'C3) 'pitch) 64))
-(um.ml:send device term)
+(undermidi:start)
+(um:list-devices)
+(set device "model_15")
+(set channel 1)
+(um.note:play-notes device channel (um.note:make '(C3 C3 C4 C3)) 500)
+(set notes (um.note:make '(C3 C3 Eb3 C3 C3 Bb3 C4 C3)))
+(um.note:play-notes device channel notes 250 8)
+(set notes (um.note:make '(C3 C3 Eb3 C3 Eb4 Bb3 C4 C3)))
+(um.note:play-notes device channel notes 250 8)
 
-(set term (midimsg:note-off channel (mref (um.note:make 'C3) 'pitch) 64))
-(timer:apply_after 250 'um.ml 'send (list device term))
-
-(um.ml:send device term)
+(undermidi:start)
+(um:list-devices)
+(set device "model_15")
+(set `#(ok ,d) (undermidi.devices:new device))
+(undermidi.device.conn:echo d "testing ...")
+(undermidi:play-note d 'C3)
+(undermidi:play-notes d '(C3 C3 Eb3 C3 C3 Bb3 C4 C3) 250 8)
 ```
 
 ## API
