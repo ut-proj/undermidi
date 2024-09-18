@@ -1,11 +1,11 @@
-;;;; This gen_server is for keeping track of which devices a user is writing
-;;;; MIDI to, and to what channels on those devices.
-(defmodule undermidi.devices
+;;;; This gen_server is for keeping track of an individual device a that is writing
+;;;; MIDI to, and the current MIDI channel in use for communications to that device.
+(defmodule undermidi.device.conn
   (behaviour gen_server)
   ;; gen_server implementation
   (export
-    (start_link 0)
-    (stop 0))
+    (start_link 1)
+    (stop 1))
   ;; callback implementation
   (export
     (code_change 3)
@@ -14,19 +14,17 @@
     (handle_info 2)
     (init 1)
     (terminate 2))
-  ;; management API
+  ;; device API
   (export
-   (new 1)
-   (read 0) (read 1) (read 2)
-   (write 1) (write 2) (write 3))
-  ;; data API
-  (export
-   (select-all 0)
-   (select-device 1)
-   (select-value 2))
+   (apply 4)
+   (channel 1) (channel 2)
+   (device 1)
+   (state 1)
+   (send 2) (send 3)
+   (batch 2) (batch 3))
   ;; debug API
   (export
-    (echo 1)))
+    (echo 2)))
 
 (include-lib "logjam/include/logjam.hrl")
 (include-lib "undermidi/include/errors.lfe")
@@ -35,18 +33,11 @@
 ;;;::=-   config functions   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=--------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun SERVER () (MODULE))
 (defun DELIMITER () #"\n")
-(defun NAME () "MIDI devices manager")
+(defun NAME () "MIDI device connection")
 
-(defun table-name () 'devices)
-(defun ets ()
-  `#m(name ,(table-name)
-      description "An ETS table for maintaining device state"
-      opts (set named_table public)))
 (defun genserver-opts () '())
-(defun initial-state ()
-  `#m(ets ,(ets)))
+
 (defun unknown-command (data)
   `#(error ,(lists:flatten (++ "Unknown command: " data))))
 
@@ -54,39 +45,28 @@
 ;;;::=-   gen_server implementation   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=-----------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun start_link ()
+(defun start_link (device-name)
   (log-info "Starting ~s ..." (list (NAME)))
-  (gen_server:start_link `#(local ,(SERVER))
-                         (MODULE)
-                         (initial-state)
+  (gen_server:start_link (MODULE)
+                         device-name
                          (genserver-opts)))
 
-(defun stop ()
-  (gen_server:call (SERVER) 'stop))
+(defun stop (pid)
+  (gen_server:call pid 'stop))
 
 ;;;;;::=---------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   callback implementation   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=---------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun init
-  (((= `#m(ets #m(name ,table-name opts ,table-opts)) state))
+(defun init (device-name)
    (log-debug "Initialising ...")
-   (ets:new table-name table-opts)
-   (log-debug (undermidi.util:table-info table-name))
-   (erlang:process_flag 'trap_exit 'true)
-   `#(ok ,state)))
+   `#(ok #m(device ,device-name
+            channel ,(undermidi.devices:read device-name 'channel))))
 
 (defun handle_call
-  ;; Data
+  ;; Management
   ((`#(state) _from state)
    `#(reply ,state ,state))
-  ((`#(devices) _from state)
-   `#(reply ,(select-all) ,state))
-   ((`#(device ,name) _from state)
-      `#(reply ,(select-device name) ,state))
-  ((`#(value ,name ,key) _from state)
-   `#(reply ,(select-value name key) ,state))
-  
   ;; Stop
   (('stop _from state)
    (log-notice "Stopping ~s ..." (list (NAME)))
@@ -142,68 +122,48 @@
 (defun code_change (_old-version state _extra)
   `#(ok ,state))
 
-;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;::=-   Devices API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;::=-   Device API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun device-record (name channel)
-  `#(,name (#(channel ,channel))))
+(defun channel (pid)
+  (mref (state pid) 'channel))
 
-(defun new (midi-device-name)
-  (new midi-device-name 1))
+(defun channel (pid num)
+  (gen_server:call pid `#(set-channel ,num)))
 
-(defun new (midi-device-name midi-channel)
-  (if (not (lists:member midi-device-name (++ (um.nif:inputs) (um.nif:outputs))))
-    (ERR_NO_DEVICE)
-    (progn
-      (ets:insert (table-name) (device-record midi-device-name midi-channel))
-      (supervisor:start_child 'undermidi.device.supervisor `(,midi-device-name)))))
+(defun device (pid)
+  (mref (state pid) 'devicel))
 
-(defun read ()
-  (gen_server:call (SERVER) '#(devices)))
+(defun apply (pid m f a)
+  (let ((`#m(device ,device
+             channel ,channel) (state pid)))
+    (apply m f (++ (list device channel) a))))
 
-(defun read (device-name)
-  (gen_server:call (SERVER) `#(device ,device-name)))
+(defun state (pid)
+  (gen_server:call pid `#(state)))
 
-(defun read (device-name key)
-  (gen_server:call (SERVER) `#(value ,device-name ,key)))
+(defun send (pid msg)
+  (let ((`#m(device ,device
+             channel ,channel) (state pid)))
+    (um.ml:send device channel msg)))
 
-(defun state ()
-  (gen_server:call (SERVER) `#(state)))
+(defun send (pid channel msg)
+  (channel pid channel)
+  (um.ml:send (device pid) channel msg))
 
-(defun write (new-table-data)
-  'tbd)
+(defun batch (pid msgs)
+  (let ((`#m(device ,device
+             channel ,channel) (state pid)))
+    (um.ml:batch device channel msgs)))
 
-(defun write (device new-device-data)
-  'tbd)
-
-(defun write (device key new-value)
-  'tbd)
+(defun batch (pid channel msgs)
+  (channel pid channel)
+  (um.ml:batch (device pid) channel msgs))
 
 ;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   debugging API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun echo (msg)
-  (gen_server:call (SERVER) `#(echo ,msg)))
-
-;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;::=-   ETS Data API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun select-all ()
-  (ets:select (table-name) (ets-ms (((tuple a b))
-                                    (tuple a b)))))
-
-(defun select-device (name)
-  (let ((result (ets:select (table-name) (ets-ms (((tuple a b))
-                                                  (when (== a name))
-                                                  (tuple a b))))))
-    (case result
-      ('() result)
-      (`(,head . ,_) head))))
-
-(defun select-value (name key)
-  (case (select-device name)
-    ('() 'undefined)
-    (`#(,_ ,plist) (proplists:get_value key plist))))
+(defun echo (pid msg)
+  (gen_server:call pid `#(echo ,msg)))
