@@ -1,27 +1,15 @@
 (defmodule undermidi.supervisor
   (behaviour supervisor)
   (export
-   (start_link 0)
-   (stop 0))
+   (start_link 0))
   (export
-   (init 1))
-  ;; Child API
-  (export
-   (child-pid 0)
-   (example 1)
-   (list-devices 0)
-   (midi 1)
-   (pid 0)
-   (ping 0)
-   (send 1)
-   (state 0)
-   (stop-port 0)
-   (version 0)))
+   (init 1)))
 
 (include-lib "logjam/include/logjam.hrl")
 
 (defun SERVER () (MODULE))
 (defun midi-devices () 'undermidi.devices)
+(defun device-manager () 'undermidi.device.supervisor)
 (defun liveplay () 'undermidi.liveplay)
 (defun beatracker () 'undermidi.beatracker)
 (defun extclock () 'undermidi.clock.ext)
@@ -32,12 +20,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun start_link ()
-  (log-info "Starting OTP supervisor ...")
+  (log-info "Starting undermidi top-level supervisor ...")
   (supervisor:start_link `#(local ,(SERVER)) (MODULE) '()))
-
-(defun stop ()
-  (call (midi-devices) 'stop)
-  (exit (pid) 'shutdown))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Supervisor Callbacks   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -51,46 +35,8 @@
              ,(child (beatracker))
              ,(child (extclock))
              ,(child (extbeats))
+             ,(child (device-manager))
              ,(child (midi-devices))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun child-pid ()
-  (call (midi-devices) 'pid))
-
-(defun example
-  ((`#m(device ,dev channel ,ch pitch ,p velocity ,v duration ,dur))
-   (send `(#(command example) #(args (#(device ,dev)
-                                      #(channel ,ch)
-                                      #(pitch ,p)
-                                      #(velocity ,v)
-                                      #(duration ,dur)))))))
-
-(defun list-devices ()
-  (send #(command list-devices)))
-
-(defun midi (midi-data)
-  (send `#(midi ,midi-data)))
-
-(defun pid ()
-  (erlang:whereis (MODULE)))
-
-(defun ping ()
-  (send #(command ping)))
-
-(defun send (msg)
-  (call (midi-devices) 'send msg))
-
-(defun state ()
-  (call (midi-devices) 'state))
-
-(defun stop-port ()
-  (send #(command stop)))
-
-(defun version ()
-  (send #(command version)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Internal Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
