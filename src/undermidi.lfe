@@ -31,9 +31,26 @@
 
 (defun list-devices ()
   ;; TODO: format this output as an actual listing
-  (um:list-devices))
+  (let ((groups (maps:to_list (um:devices))))
+    (list-comp ((<- g groups))
+      (progn
+        (io:format "~n~s~n" (list (element 1 g)))
+        (list-devices (element 2 g)))))
+  'ok)
 
-;;; Notes API
+(defun list-devices (ds)
+  (list-comp ((<- `#(,index ,name) ds))
+    (io:format "  ~p. ~s~n" (list index name)))
+  'ok)
+
+;;; The following functions define an API for a gen_server that manages the
+;;; state of individual "connections" to MIDI devices. Due to the state
+;;; management of the gen_server, neither device name nore channel are passed
+;;; in these functions. If a more functional approach is desired, then the
+;;; developer should access directly the various functions that are wrapped
+;;; here.
+
+;; Notes API
 
 (defun play-note (pid note)
   (undermidi.device.conn:apply pid 'um.note 'play-note (list (um.note:make note))))

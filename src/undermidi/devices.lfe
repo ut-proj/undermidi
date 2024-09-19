@@ -152,12 +152,15 @@
 (defun new (midi-device-name)
   (new midi-device-name 1))
 
-(defun new (midi-device-name midi-channel)
-  (if (not (lists:member midi-device-name (++ (um.nif:inputs) (um.nif:outputs))))
-    (ERR_NO_DEVICE)
-    (progn
-      (ets:insert (table-name) (device-record midi-device-name midi-channel))
-      (supervisor:start_child 'undermidi.device.supervisor `(,midi-device-name)))))
+(defun new
+  ((midi-device-name midi-channel) (when (is_atom midi-device-name))
+   (new (atom_to_list midi-device-name) midi-channel))
+  ((midi-device-name midi-channel)
+   (if (not (lists:member midi-device-name (++ (um.nif:inputs) (um.nif:outputs))))
+     (ERR_NO_DEVICE)
+     (progn
+       (ets:insert (table-name) (device-record midi-device-name midi-channel))
+       (supervisor:start_child 'undermidi.device.supervisor `(,midi-device-name))))))
 
 (defun read ()
   (gen_server:call (SERVER) '#(devices)))
