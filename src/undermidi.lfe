@@ -29,6 +29,10 @@
   (stop)
   (start))
 
+(defun list-devices ()
+  ;; TODO: format this output as an actual listing
+  (um:list-devices))
+
 ;;; Notes API
 
 (defun play-note (pid note)
@@ -44,9 +48,6 @@
   (undermidi.device.conn:apply pid 'um.note 'play-notes (list (um.note:make notes) delay repeats)))
 
 ;;; Aliases
-
-(defun list-devices ()
-  (um.nif:list-devices))
 
 (defun version ()
   (undermidi.vers:version))

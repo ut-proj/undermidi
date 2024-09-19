@@ -385,6 +385,19 @@ C-1	0
 C       0
 ))
 
+(defun dynamics ()
+  `#m(
+      ffff 127
+      fff  114 ; Fortississimo
+      ff   100 ; Fortissimo
+      f     86 ; Forte
+      mf    72 ; Mezzo forte
+      mp    58 ; Mezzo piano
+      p     44 ; Piano
+      pp    30 ; Pianissimo
+      ppp   16 ; Pianississimo
+      pppp   1))
+
 (defun get-pitch (name)
   (mref (all) name))
 
@@ -414,6 +427,8 @@ C       0
    (play-note device channel note)))
 
 (defun play-note
+  ((device channel note) (when (is_atom note))
+   (play-note device channel (make note)))
   ((device channel `#m(pitch ,p velocity ,v duration ,d))
    (let ((note-on (midimsg:note-on channel p v))
          (note-off (midimsg:note-on channel p 0)))
@@ -436,5 +451,6 @@ C       0
    (play-notes device channel acc delay (- repeats 1) '()))
   ((device channel `(,head . ,tail) delay repeats acc)
    (play-note device channel head)
+   ;; TODO: this is a hack; we need to send timing data MIDI messages ...
    (timer:sleep delay)
    (play-notes device channel tail delay repeats (++ acc `(,head)))))
