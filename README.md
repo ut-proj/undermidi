@@ -81,10 +81,78 @@ Note that, depending upon the configured log level, you may see a fair amount of
 (set `#(ok ,d) (undermidi.devices:new device))
 (undermidi.device.conn:echo d "testing ...")
 (undermidi:play-note d 'C3)
-(undermidi:play-notes d '(C3 C3 Eb3 C3 C3 Bb3 C4 C3) 250 8)
+(undermidi:play-notes d '(C3 C3 Eb3 C3 C3 Bb3 C3 C4) 250 8)
 ```
 
 ## API
+
+There are two ways to use this library:
+
+1. Stateless: Make direct calls to the undermidi wrappers for the MIDI Erlang NIF, passing device and channel with every call
+1. Stateful: Create a managed connection to the MIDI device, passing only the data you need to make music
+
+Each of these are demonstrated below. The stateful approach is preferred and encouraged, as it makes code easier to read and helps one organise workflows when coding for multiple MIDI devices at once.
+
+The `midilib` code used by undermidi utilises the same methods as the Erlang NIF, system device names:
+
+``` lisp
+lfe> (undermidi:list-devices)
+```
+
+We'll use one of these names in the examples below.
+
+### Stateful
+
+Get a managed MIDI device connection:
+
+``` lisp
+lfe> (set `#(ok ,d) (undermidi.devices:new ""))
+#(ok #Pid<0.1140.0>)
+```
+
+#### Notes
+
+The `undermidi` project represents notes as a data structure of pitch, velocity, and duration. However, it provides some defaults to make that a little easier to work with, as well as a means of easily referencing MIDI pitch values using note names.
+
+Play a single note:
+
+``` lisp
+lfe> (undermidi:play-note d 'C3)
+```
+
+Play a series of notes:
+
+``` lisp
+lfe> (undermidi:play-notes d '(C3 C3 Eb3 C3 C3 Bb3 C3 C4))
+```
+
+The `play-notes` function also accepts optional arguments for changing the time between the notes as well as the ability to repeat the series.
+
+#### Scales
+
+#### Chords
+
+#### Sequences
+
+### Stateless
+
+Some variables for the MIDI device and the MIDI channel we're going to use for most calls:
+
+``` lisp
+lfe> (set device "")
+lfe> (set channel 1)
+```
+
+#### Notes
+
+``` lisp
+lfe> (um.note:play device channel 'C3)
+lfe> (um.note:play device channel '(C3 C3 Eb3 C3 C3 Bb3 C3 C4))
+```
+
+#### Chords
+
+## OLD -- will be (re)moved
 
 For actually using undermidi to generate music, the `um*` modules are used. Notes, chords, and controls are all supported. Before playing, though, the device and MIDI channel must be set:
 

@@ -1,7 +1,7 @@
 ;;;; undermidi module for music functions specific to undermidi
 (defmodule um
   (export
-   (list-devices 0))
+   (devices 0))
   ;; !!DEPRECATED!!
   (export
    (bank-select 2) (bank-select 3)
@@ -33,8 +33,11 @@
 
 ;;; New API
 
-(defun list-devices ()
-  (um.nif:devices))
+(defun devices ()
+  (um.nif:refresh)
+  `#m(inputs ,(lists:enumerate (um.nif:inputs))
+      outputs ,(lists:enumerate (um.nif:outputs))))
+
 
 ;;; !!DANGER!! -- everything below this line is going to change,
 ;;;               anything from function names and args to module

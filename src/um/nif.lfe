@@ -24,11 +24,6 @@
 (defun set-log-level (a) (sp_midi:set_log_level a))
 (defun set-pid (a) (sp_midi:set_this_pid a))
 
-(defun devices ()
-  (refresh)
-  `#m(inputs ,(lists:enumerate (inputs))
-      outputs ,(lists:enumerate (outputs))))
-
 #|
 
 Example send or raw binary MIDI data in LFE REPL:
