@@ -93,22 +93,45 @@ There are two ways to use this library:
 
 Each of these are demonstrated below. The stateful approach is preferred and encouraged, as it makes code easier to read and helps one organise workflows when coding for multiple MIDI devices at once.
 
-The `midilib` code used by undermidi utilises the same methods as the Erlang NIF, system device names:
+The `midilib` code used by undermidi utilises the same means as the Erlang NIF for referencing MIDI devices: their system names. The full set known by the system can be displayed with the following:
 
 ``` lisp
 lfe> (undermidi:list-devices)
+
+inputs
+  1. network_session_1
+  2. core_midi_general
+  3. core_midi_keyboards
+  4. komplete_kontrol_s88_mk2_port_1
+  5. komplete_kontrol_s88_mk2_port_2
+  6. komplete_kontrol_daw_-_1
+  7. model_15
+  8. model_d
+
+outputs
+  1. network_session_1
+  2. core_midi_general
+  3. core_midi_keyboards
+  4. komplete_kontrol_s88_mk2_port_1
+  5. komplete_kontrol_s88_mk2_port_2
+  6. komplete_kontrol_daw_-_1
+  7. model_15
+  8. model_d
+ok
 ```
 
-We'll use one of these names in the examples below.
+We'll use one of these names in the examples below, Moog's `"model_15"`.
 
 ### Stateful
 
 Get a managed MIDI device connection:
 
 ``` lisp
-lfe> (set `#(ok ,d) (undermidi.devices:new ""))
+lfe> (set `#(ok ,d) (undermidi.devices:new "model_15"))
 #(ok #Pid<0.1140.0>)
 ```
+
+Note that the name may be passed as either an atom or a string (list), but that the name used by the NIF is a string, and as such, undermidi ensures a name passed as an atom is converted when calling `new`.
 
 #### Notes
 
