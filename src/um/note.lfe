@@ -385,6 +385,15 @@ C-1	0
 C       0
 ))
 
+;; The initial division of the range 0-127 into the ppp to fff dynamic ranges
+;; (of which there are eight) was done in the following manner:
+;;
+;; lfe> (list-comp ((<- x (lutil-lists:chunks (lists:seq 10 120)
+;;                                            8 ; <-- number of parts
+;;                                            #(by-parts))))
+;;                 (lists:nth 7 x))
+;; Which gave:
+;; (16 30 44 58 72 86 100 114)
 (defun dynamics ()
   `#m(
       ffff 127
