@@ -453,13 +453,25 @@ Which gave:
   ((num) (when (> num 120))
    'ffff))
 
-#| It seems like a probability Gaussian around a dynamic would be a nice first-
+#| It seems like a normal distribution around a dynamic would be a nice first-
 approximation for selecting a random velocity that stays within the defined
 range of a given dynamic.
 
 |#
 (defun fuzzy-velocity (name)
-  'tbd)
+  (fuzzy-velocity name 2))
+
+(defun fuzzy-velocity
+  ((name variance) (when (is_atom name))
+   (fuzzy-velocity (get-velocity name) 2))
+  ((v variance)
+   (round (rand:normal v variance))))
+
+(defun fuzzy-duration (name)
+  (fuzzy-duration name 2))
+
+(defun fuzzy-duration (ms variance)
+  (round (rand:normal ms variance)))
 
 (defun get-pitch (name)
   (mref (all) name))
@@ -473,7 +485,7 @@ range of a given dynamic.
   ((names) (when (is_list names))
    (list-comp ((<- n names)) (make n)))
   ((name)
-   (make name 64)))
+   (make name (get-velocity 'mp))))
 
 (defun make(name velocity)
   (make name velocity 100))
@@ -485,6 +497,23 @@ range of a given dynamic.
    `#m(pitch ,pitch
        velocity ,velocity
        duration ,duration)))
+
+(defun make-fuzzy
+  ((names) (when (is_list names))
+   (list-comp ((<- n names)) (make-fuzzy n)))
+  ((name)
+   (make-fuzzy name (get-velocity 'mp))))
+
+(defun make-fuzzy (v velocity)
+  (make-fuzzy v velocity 100))
+
+(defun make-fuzzy
+  ((name velocity duration) (when (is_atom name))
+   (make-fuzzy (get-pitch name) velocity duration))
+  ((p v d)
+   `#m(pitch ,p
+       velocity ,(fuzzy-velocity v)
+       duration ,(fuzzy-duration d))))
 
 (defun play
   ((device channel notes) (when (is_list notes))
