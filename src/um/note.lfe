@@ -385,27 +385,81 @@ C-1	0
 C       0
 ))
 
-;; The initial division of the range 0-127 into the ppp to fff dynamic ranges
-;; (of which there are eight) was done in the following manner:
-;;
-;; lfe> (list-comp ((<- x (lutil-lists:chunks (lists:seq 10 120)
-;;                                            8 ; <-- number of parts
-;;                                            #(by-parts))))
-;;                 (lists:nth 7 x))
-;; Which gave:
-;; (16 30 44 58 72 86 100 114)
+#| The initial division of the range 0-127 into the ppp to fff dynamic ranges
+(of which there are eight) was done in the following manner:
+
+lfe> (list-comp ((<- x (lutil-lists:chunks (lists:seq 10 120)
+                                            8 ; <-- number of parts
+                                            #(by-parts))))
+                (lists:nth 7 x))
+Which gave:
+(16 30 44 58 72 86 100 114)
+
+Note that these may be changed to taste/hearing at a latter date.
+|#
 (defun dynamics ()
-  `#m(
-      ffff 127
-      fff  114 ; Fortississimo
-      ff   100 ; Fortissimo
-      f     86 ; Forte
-      mf    72 ; Mezzo forte
-      mp    58 ; Mezzo piano
-      p     44 ; Piano
-      pp    30 ; Pianissimo
-      ppp   16 ; Pianississimo
-      pppp   1))
+  '(#(ffff 127)
+    #(fff  114) ; Fortississimo
+    #(ff   100) ; Fortissimo
+    #(f     86) ; Forte
+    #(mf    72) ; Mezzo forte
+    #(mp    58) ; Mezzo piano
+    #(p     44) ; Piano
+    #(pp    30) ; Pianissimo
+    #(ppp   16) ; Pianississimo
+    #(pppp   1)))
+
+(defun velocities ()
+  (list-comp ((<- `#(,k ,v) (dynamics))) `#(,v ,k)))
+
+(defun get-velocity (name)
+  (proplists:get_value name (dynamics)))
+
+(defun get-dynamic (num)
+  (proplists:get_value num (velocities)))
+
+#| To get the MIDI ranges for the dynamics, did the following in the LFE REPL:
+
+lfe> lfe_io:format "~w~n" (list (lists:reverse (++ '(127) 
+                                                   (cdr
+                                                     (lists:flatten
+                                                       (lists:map (match-lambda ((`(,a ,b)) 
+                                                                    (let ((range (round (/ (- a b) 2))))
+                                                                      (list (+ a range) (- a range)))))
+                                                                  (lutil-list:chunks vs 2 #(by-length)))))))))
+
+Which gave:
+(8 24 37 51 65 79 93 107 120 127)
+|#
+(defun nearest-dynamic
+  ((num) (when (=< num 8))
+   'pppp)
+  ((num) (when (=< num 24))
+   'ppp)
+  ((num) (when (=< num 37))
+   'pp)
+  ((num) (when (=< num 51))
+   'p)
+  ((num) (when (=< num 65))
+   'mp)
+  ((num) (when (=< num 79))
+   'mf)
+  ((num) (when (=< num 93))
+   'f)
+  ((num) (when (=< num 107))
+   'ff)
+  ((num) (when (=< num 120))
+   'fff)
+  ((num) (when (> num 120))
+   'ffff))
+
+#| It seems like a probability Gaussian around a dynamic would be a nice first-
+approximation for selecting a random velocity that stays within the defined
+range of a given dynamic.
+
+|#
+(defun fuzzy-velocity (name)
+  'tbd)
 
 (defun get-pitch (name)
   (mref (all) name))
@@ -424,10 +478,13 @@ C       0
 (defun make(name velocity)
   (make name velocity 100))
 
-(defun make (name velocity duration)
-  `#m(pitch ,(get-pitch name)
-      velocity ,velocity
-      duration ,duration))
+(defun make
+  ((name velocity duration) (when (is_atom name))
+   (make (get-pitch name) velocity duration))
+  ((pitch velocity duration)
+   `#m(pitch ,pitch
+       velocity ,velocity
+       duration ,duration)))
 
 (defun play
   ((device channel notes) (when (is_list notes))
