@@ -2,7 +2,7 @@
 
 ## System MIDI
 
-You will need to have the `` header files installed, since this is used by `midiserver` (dynamically linked):
+You will need to have the libasound2 header files installed, since this is used by the Erlang NIF for Linux support:
 
 ``` shell
 $ sudo apt-get install -y libasound2-dev
@@ -20,23 +20,7 @@ $ sudo apt-get install -y \
 	--no-install-recommends \
 ```
 
-After you've downloaded `midiserver` and set the executable bit, run it with these options to see your current system MIDI devices:
-
-```shell
-$ /path/to/midiserver list-devices
-```
-
-On Ubuntu-based distributions, you will see something like this:
-
-```text
-MIDI IN devices:
-	[0] Midi Through:Midi Through Port-0 14:0
-MIDI OUT devices:
-	[0] Midi Through:Midi Through Port-0 14:0
-```
-
-In and off themselves, these aren't useful; you'll need to add a MIDI device that _is_ useful, though. In Linux, software MIDI devices register with the OS, so we just need to start up the MIDI software of our choosing in order to get a useful device (and corresponding device ID).
-
+Building the undermidi project is done per the instructions in the project README (the same for all supported operating systems).
 
 ## Using Software MIDI Devices
 
@@ -50,24 +34,9 @@ $ sudo apt-get install -y yoshimi
 
 Once installed, run it, and then list your devices again:
 
-```shell
-$ /path/to/midiserver list-devices
+```lisp
+lfe> (undermidi:list-devices)
 ```
-```text
-MIDI IN devices:
-	[0] Midi Through:Midi Through Port-0 14:0
-MIDI OUT devices:
-	[0] Midi Through:Midi Through Port-0 14:0
-	[1] yoshimi:input 128:0
-```
-
-The synth has the system device ID of 1, so we can test it on MIDI channel 0 with the following:
-
-```shell
-$ /path/to/midiserver example 1 0
-```
-
-We'll look at a more sophisticated synth in a bit, but next let's play the `midiserver` example with a sampled grand piano ...
 
 ### Qsynth and Soundfonts
 
@@ -79,29 +48,13 @@ We'll look at a more sophisticated synth in a bit, but next let's play the `midi
 $ sudo apt-get install -y qsynth
 ```
 
-```shell
-$ /path/to/midiserver list-devices
+Once installed, run it, and then list your devices again:
+
+```lisp
+lfe> (undermidi:list-devices)
 ```
 
-``` shell
-MIDI IN devices:
-	[0] Midi Through:Midi Through Port-0 14:0
-MIDI OUT devices:
-	[0] Midi Through:Midi Through Port-0 14:0
-	[1] yoshimi:input 128:0
-	[2] FLUID Synth (16999):Synth input port (16999:0) 129:0
-```
+Load soundfont:
 
-Load soundfont
+TBD
 
-```shell
-$ /path/to/midiserver example 2 3
-```
-
-### XXX
-
-If you want to be generating diverse sounds via software synthesis, then XXX is a good choice.
-
-```shell
-$ sudo apt-get install -y XXX
-```
