@@ -2,22 +2,13 @@
 
 ## System MIDI
 
-After you've downloaded `midiserver` and set the executable bit, run it with these options to see your current system MIDI devices:
+After following the instructions in the project README file, you should be able to see the system MIDI devices with:
 
-```shell
-$ /path/to/midiserver list-devices
+``` lisp
+lfe> (undermidi:list-devices)
 ```
 
-At the very least -- on macos -- you should see something like this:
-
-```
-MIDI IN devices:
-	[0] IAC Driver Bus 1
-MIDI OUT devices:
-	[0] IAC Driver Bus 1
-```
-
-For Mac users, if you don't see any output, then you'll want to open `Applications -> Utilities -> Audio MIDI Setup` and then from the `Window` menu, select `Show MIDI Studio`. Once that window is displayed, you'll want to check the box "Device is online" (should be under the "Model" dropdown). Once checked, re-run the `midiserver -list` command, and you should see the expected output.
+If you don't see any output, then you'll want to open `Applications -> Utilities -> Audio MIDI Setup` and then from the `Window` menu, select `Show MIDI Studio`. Once that window is displayed, you'll want to check the box "Device is online" (should be under the "Model" dropdown). Once checked, re-run the function above, and you should see the expected output.
 
 ## Adding a Software MIDI Device
 
