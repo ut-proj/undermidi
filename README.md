@@ -82,6 +82,8 @@ Note that, depending upon the configured log level, you may see a fair amount of
 (undermidi.device.conn:echo d "testing ...")
 (undermidi:play-note d 'C3)
 (undermidi:play-notes d '(C3 C3 Eb3 C3 C3 Bb3 C3 C4) 250 8)
+(undermidi:play-notes d '(C3 C3 Eb3 C3 C3 Bb3 C3 C4) 250 8)
+(undermidi:play-notes d '(E3 G3 C4 B3 E4 G4 C5 B4) 250 8)
 ```
 
 ## API
