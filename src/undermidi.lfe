@@ -52,17 +52,32 @@
 
 ;; Notes API
 
-(defun play-note (pid note)
-  (undermidi.device.conn:apply pid 'um.note 'play-note (list (um.note:make note))))
+(defun play-note
+  ((pid note) (when (is_atom note))
+   (play-note pid (um.note:make note)))
+  ((pid note)
+   (undermidi.device.conn:apply pid 'um.note 'play-note (list note))))
 
-(defun play-notes (pid notes)
-  (undermidi.device.conn:apply pid 'um.note 'play-notes (list (um.note:make notes))))
+(defun play-notes
+  ((pid (= `(,head . ,_) notes)) (when (is_atom head))
+   (play-notes pid (um.note:make notes)))
+  ((pid notes)
+   (undermidi.device.conn:apply pid 'um.note 'play-notes (list notes))))
 
-(defun play-notes (pid notes delay)
-  (undermidi.device.conn:apply pid 'um.note 'play-notes (list (um.note:make notes) delay)))
+(defun play-notes
+  ((pid (= `(,head . ,_) notes) delay) (when (is_atom head))
+   (play-notes pid (um.note:make notes) delay))
+  ((pid notes delay)
+   (undermidi.device.conn:apply pid 'um.note 'play-notes (list notes delay))))
 
-(defun play-notes (pid notes delay repeats)
-  (undermidi.device.conn:apply pid 'um.note 'play-notes (list (um.note:make notes) delay repeats)))
+(defun play-notes
+  ((pid (= `(,head . ,_) notes) delay repeats) (when (is_atom head))
+   (play-notes pid (um.note:make notes) delay repeats))
+  ((pid notes delay repeats)
+   (undermidi.device.conn:apply pid
+                                'um.note
+                                'play-notes
+                                (list notes delay repeats))))
 
 ;;; Aliases
 
