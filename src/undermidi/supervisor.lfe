@@ -10,10 +10,6 @@
 (defun SERVER () (MODULE))
 (defun midi-devices () 'undermidi.devices)
 (defun device-manager () 'undermidi.device.supervisor)
-(defun liveplay () 'undermidi.liveplay)
-(defun beatracker () 'undermidi.beatracker)
-(defun extclock () 'undermidi.clock.ext)
-(defun extbeats () 'undermidi.clock.ext.beats)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   OTP Supervisor   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -31,11 +27,7 @@
   `#(ok #(#m(strategy one_for_one
              intensity 3
 	           period 60)
-            (,(child (liveplay))
-             ,(child (beatracker))
-             ,(child (extclock))
-             ,(child (extbeats))
-             ,(child (device-manager))
+            (,(child (device-manager))
              ,(child (midi-devices))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
