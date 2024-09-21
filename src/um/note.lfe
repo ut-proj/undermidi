@@ -549,3 +549,8 @@ range of a given dynamic.
    ;; TODO: this is a hack; we need to send timing data MIDI messages ...
    (timer:sleep delay)
    (play-notes device channel tail delay repeats (++ acc `(,head)))))
+
+(defun lengthen (notes duration-multiplier)
+  (lists:map (lambda (m)
+               (mset m 'duration (* duration-multiplier (mref m 'duration))))
+             notes))
