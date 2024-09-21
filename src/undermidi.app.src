@@ -11,8 +11,6 @@
   {env,[]},
   {modules, [
     'undermidi.devices',
-    'undermidi.clock.ext',
-    'undermidi.clock.ext.beats',
     'undermidi.util'
   ]},
 
