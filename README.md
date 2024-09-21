@@ -51,7 +51,7 @@ Note that, depending upon the configured log level, you may see a fair amount of
 
 ``` lisp
 (undermidi:start)
-(um:list-devices)
+(undermidi:list-devices)
 (set device "model_15")
 (set channel 1)
 (set term (midimsg:note-on channel 48 64))
@@ -60,13 +60,13 @@ Note that, depending upon the configured log level, you may see a fair amount of
 (um.ml:send device term)
 
 (undermidi:start)
-(um:list-devices)
+(undermidi:list-devices)
 (set device "model_15")
 (set channel 1)
 (um.note:play device channel (um.note:make 'C3))
 
 (undermidi:start)
-(um:list-devices)
+(undermidi:list-devices)
 (set device "model_15")
 (set channel 1)
 (um.note:play-notes device channel (um.note:make '(C3 C3 C4 C3)) 500)
@@ -76,7 +76,7 @@ Note that, depending upon the configured log level, you may see a fair amount of
 (um.note:play-notes device channel notes 250 8)
 
 (undermidi:start)
-(um:list-devices)
+(undermidi:list-devices)
 (set device "model_15")
 (set `#(ok ,d) (undermidi.devices:new device))
 (undermidi.device.conn:echo d "testing ...")
@@ -87,6 +87,25 @@ Note that, depending upon the configured log level, you may see a fair amount of
 (undermidi:play-notes d '(seq-1b) 250 8)
 (undermidi:play-notes d '(seq-2a) 250 8)
 (undermidi:play-notes d '(seq-3a) 250 8)
+
+(undermidi:start)
+(undermidi:list-devices)
+(set device "midi_bus_1")
+(set device "provs-mini_provs-mini_midi_1_24_0")
+(set `#(ok ,d) (undermidi.devices:new device))
+(include-lib "priv/seqs/basic.lfe")
+(set notes (um.note:legnthen (um.chord:make-fuzzy (seq-3a) 80)))
+(undermidi:play-notes d notes 8200 1)
+
+(undermidi:start)
+(set device "midi_bus_1")
+(set `#(ok ,d) (undermidi.devices:new device))
+(set cmaj7 (um.chord:lengthen (um.chord:make-fuzzy '(C4 E4 G4 B4)) 40))
+(set am7 (um.chord:lengthen (um.chord:make-fuzzy '(C4 E4 G4 A4)) 40))
+(set fmaj7 (um.chord:lengthen (um.chord:make-fuzzy '(C4 E4 F4 A4)) 40))
+(set dm7 (um.chord:lengthen (um.chord:make-fuzzy '(C4 D4 F4 A4)) 40))
+(set bdim7 (um.chord:lengthen (um.chord:make-fuzzy '(B3 D4 F4 A4)) 40))
+(undermidi:play-chords d (list cmaj7 am7 fmaj7 dm7 bdim7) 4200 0)
 ```
 
 ## API
