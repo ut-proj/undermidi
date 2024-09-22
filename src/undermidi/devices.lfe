@@ -18,7 +18,7 @@
   (export
    (new 1)
    (read 0) (read 1) (read 2)
-   (write 1) (write 2) (write 3))
+   (write 2) (write 3))
   ;; data API
   (export
    (select-all 0)
@@ -82,8 +82,8 @@
    `#(reply ,state ,state))
   ((`#(devices) _from state)
    `#(reply ,(select-all) ,state))
-   ((`#(device ,name) _from state)
-      `#(reply ,(select-device name) ,state))
+  ((`#(device ,name) _from state)
+   `#(reply ,(select-device name) ,state))
   ((`#(value ,name ,key) _from state)
    `#(reply ,(select-value name key) ,state))
   
@@ -100,6 +100,9 @@
 
 (defun handle_cast
   ;; Command support
+  ((`#(set-device #(,name #(channel ,channel))) state)
+   (update-device name channel)
+   `#(noreply ,state))
   (((= `(#(command ,_)) cmd) state)
    (log-warn "Unsupported server command: ~p" `(,cmd))
    `#(noreply ,state))
@@ -146,7 +149,7 @@
 ;;;::=-   Devices API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun device-record (name channel)
+(defun make-device (name channel)
   `#(,name (#(channel ,channel))))
 
 (defun new (midi-device-name)
@@ -159,7 +162,7 @@
    (if (not (lists:member midi-device-name (++ (um.nif:inputs) (um.nif:outputs))))
      (ERR_NO_DEVICE)
      (progn
-       (ets:insert (table-name) (device-record midi-device-name midi-channel))
+       (add-device midi-device-name midi-channel)
        (supervisor:start_child 'undermidi.device.supervisor `(,midi-device-name))))))
 
 (defun read ()
@@ -173,9 +176,6 @@
 
 (defun state ()
   (gen_server:call (SERVER) `#(state)))
-
-(defun write (new-table-data)
-  'tbd)
 
 (defun write (device new-device-data)
   'tbd)
@@ -210,3 +210,11 @@
   (case (select-device name)
     ('() 'undefined)
     (`#(,_ ,plist) (proplists:get_value key plist))))
+
+(defun add-device (device channel)
+  (ets:insert (table-name)
+              (make-device device channel)))
+  
+(defun update-device (name channel)
+  (ets:insert (table-name)
+              (make-device name channel)))
