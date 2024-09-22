@@ -1,6 +1,6 @@
 ;;;; This gen_server is for keeping track of an individual device a that is writing
 ;;;; MIDI to, and the current MIDI channel in use for communications to that device.
-(defmodule undermidi.device.conn
+(defmodule undermidi.device.client
   (behaviour gen_server)
   ;; gen_server implementation
   (export
@@ -80,6 +80,8 @@
 
 (defun handle_cast
   ;; Command support
+  ((`#(set-channel ,num) state)
+   `#(noreply (mset state 'channel num)))
   (((= `(#(command ,_)) cmd) state)
    (log-warn "Unsupported server command: ~p" `(,cmd))
    `#(noreply ,state))
@@ -130,7 +132,9 @@
   (mref (state pid) 'channel))
 
 (defun channel (pid num)
-  (gen_server:call pid `#(set-channel ,num)))
+  (let ((`#m(device ,name) (state pid)))
+    (undermidi.devices:update-device name num)
+    (gen_server:call pid `#(set-channel ,num))))
 
 (defun device (pid)
   (mref (state pid) 'devicel))
