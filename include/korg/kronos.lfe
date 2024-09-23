@@ -1,9 +1,4 @@
-(defmodule korg
-  (export
-   (bank-lookup 0)
-   (bank-select 1) (bank-select 2)))
-
-(defun bank-lookup ()
+(defun -bank-lookup ()
   #m("INT-A" (0 0)
      "INT-B" (0 1)
      "INT-C" (0 2)
@@ -47,4 +42,9 @@
   (um:program-change program))
 
 (defun bank-select (bank program)
-  (um:bank-select (mref (bank-lookup) bank) program))
+  (um:bank-select (mref (-bank-lookup) bank) program))
+
+;; This function is for display purposes when used in the REPL
+;; and needs to be the last function in the include file.
+(defun |-- loaded include: korg/kronos --| ()
+  'ok)
