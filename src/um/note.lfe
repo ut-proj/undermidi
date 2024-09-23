@@ -1,6 +1,10 @@
 (defmodule um.note
   (export all))
 
+;;;;;;;;;;;;;
+;;; PITCH ;;;
+;;;;;;;;;;;;;
+
 (defun	G9	()	127	)
 (defun	F#9	()	126	)
 (defun	Gb9	()	126	)
@@ -183,7 +187,7 @@
 (defun	Db-1	()	1	)
 (defun	C-1	()	0	)
 
-(defun all ()
+(defun midi-names ()
   #m(
 G9	127
 F#9	126
@@ -385,6 +389,74 @@ C-1	0
 C       0
 ))
 
+(defun get-pitch (name)
+  (mref (midi-names) name))
+
+(defun get-pitches (names)
+  (let ((all (midi-names)))
+    (list-comp ((<- n names))
+      (mref all n))))
+
+(defun make
+  ((names) (when (is_list names))
+   (list-comp ((<- n names)) (make n)))
+  ((name)
+   (make name (get-velocity 'mp))))
+
+(defun make(name velocity)
+  (make name velocity 100))
+
+(defun make
+  ((name velocity duration) (when (is_atom name))
+   (make (get-pitch name) velocity duration))
+  ((pitch velocity duration)
+   `#m(pitch ,pitch
+       velocity ,velocity
+       duration ,duration)))
+
+(defun make-fuzzy
+  ((names) (when (is_list names))
+   (list-comp ((<- n names)) (make-fuzzy n)))
+  ((name)
+   (make-fuzzy name (get-velocity 'mp))))
+
+(defun make-fuzzy (v velocity)
+  (make-fuzzy v velocity 100))
+
+(defun make-fuzzy
+  ((name velocity duration) (when (is_atom name))
+   (make-fuzzy (get-pitch name) velocity duration))
+  ((p v d)
+   `#m(pitch ,p
+       velocity ,(fuzzy-velocity v)
+       duration ,(fuzzy-duration d))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; NOTE VALUE & DURATION ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun note-values ()
+  '(2                 ; double note / breve 
+    1                 ; whole note / semibreve 
+    1/2               ; half note / minim 
+    1/4               ; quarter note / crotchet
+    1/8               ; eighth note / quaver
+    1/16              ; sixteenth note / semiquaver
+    1/32              ; thirty-second note / demisemiquaver
+    1/64              ; sixty-fourth note / hemidemisemiquaver
+    1/128             ; semihemidemisemiquaver
+    ))
+
+(defun fuzzy-duration (ms)
+  (fuzzy-duration ms 2))
+
+(defun fuzzy-duration (ms variance)
+  (round (rand:normal ms variance)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; DYNAMICS & VELOCITY ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 #| The initial division of the range 0-127 into the ppp to fff dynamic ranges
 (of which there are eight) was done in the following manner:
 
@@ -420,7 +492,7 @@ Note that these may be changed to taste/hearing at a latter date.
 
 #| To get the MIDI ranges for the dynamics, did the following in the LFE REPL:
 
-lfe> lfe_io:format "~w~n" (list (lists:reverse (++ '(127) 
+lfe> (lfe_io:format "~w~n" (list (lists:reverse (++ '(127) 
                                                    (cdr
                                                      (lists:flatten
                                                        (lists:map (match-lambda ((`(,a ,b)) 
@@ -467,53 +539,9 @@ range of a given dynamic.
   ((v variance)
    (round (rand:normal v variance))))
 
-(defun fuzzy-duration (name)
-  (fuzzy-duration name 2))
-
-(defun fuzzy-duration (ms variance)
-  (round (rand:normal ms variance)))
-
-(defun get-pitch (name)
-  (mref (all) name))
-
-(defun get-pitches (names)
-  (let ((all (all)))
-    (list-comp ((<- n names))
-      (mref all n))))
-
-(defun make
-  ((names) (when (is_list names))
-   (list-comp ((<- n names)) (make n)))
-  ((name)
-   (make name (get-velocity 'mp))))
-
-(defun make(name velocity)
-  (make name velocity 100))
-
-(defun make
-  ((name velocity duration) (when (is_atom name))
-   (make (get-pitch name) velocity duration))
-  ((pitch velocity duration)
-   `#m(pitch ,pitch
-       velocity ,velocity
-       duration ,duration)))
-
-(defun make-fuzzy
-  ((names) (when (is_list names))
-   (list-comp ((<- n names)) (make-fuzzy n)))
-  ((name)
-   (make-fuzzy name (get-velocity 'mp))))
-
-(defun make-fuzzy (v velocity)
-  (make-fuzzy v velocity 100))
-
-(defun make-fuzzy
-  ((name velocity duration) (when (is_atom name))
-   (make-fuzzy (get-pitch name) velocity duration))
-  ((p v d)
-   `#m(pitch ,p
-       velocity ,(fuzzy-velocity v)
-       duration ,(fuzzy-duration d))))
+;;;;;;;;;;;;;;;;;;;
+;;; PERFORMANCE ;;;
+;;;;;;;;;;;;;;;;;;;
 
 (defun play
   ((device channel notes) (when (is_list notes))
