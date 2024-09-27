@@ -16,9 +16,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun start (_start-type _start-args)
-  (log-info "Starting OTP application ..." '())
-  (um.nif:initialise)
-  (undermidi.supervisor:start_link))
+  (let ((cfg-file "config/sys.config"))
+    (logjam:set-config `#(path ,cfg-file))
+    (log-info "Starting OTP application ..." '())
+    (um.nif:initialise)
+    (io:format "~s" (list (undermidi.util:banner)))
+    (logjam:set-config `#(path ,cfg-file))
+    (log-notice "Starting undermidi, version ~s ..." (list (undermidi:version)))
+    (log-debug "\nVersions:\n~p\n" (list (undermidi:versions)))
+    (undermidi.supervisor:start_link)))
 
 (defun stop (_state)
   (um.nif:deinitialise)
