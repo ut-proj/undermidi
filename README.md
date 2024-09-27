@@ -39,6 +39,8 @@ Then start the LFE REPL with prefined options for undermidi:
 $ rebar3 as undermidi repl
 ```
 
+**IMPORTANT!!**: the command given above automatically starts undermidid. If you do not use that command, you will need to manually start undermidi. Not doing so will result in many commands cusing a segmentation fault of the Erlang VM due to the MIDI NIF not being initialised!
+
 Once the LFE REPL is ready, you can start the app:
 
 ```cl
@@ -59,13 +61,11 @@ Note that, depending upon the configured log level, you may see a fair amount of
 (set term (midimsg:note-off channel 48 64))
 (um.ml:send device term)
 
-(undermidi:start)
 (undermidi:list-devices)
 (set device "model_15")
 (set channel 1)
 (um.note:play device channel (um.note:make 'C3))
 
-(undermidi:start)
 (undermidi:list-devices)
 (set device "model_15")
 (set channel 1)
@@ -75,7 +75,6 @@ Note that, depending upon the configured log level, you may see a fair amount of
 (set notes (um.note:make '(C3 C3 Eb3 C3 Eb4 Bb3 C4 C3)))
 (um.note:play-notes device channel notes 250 8)
 
-(undermidi:start)
 (undermidi:list-devices)
 (set device "model_15")
 (set `#(ok ,d) (undermidi.devices:new device))
@@ -88,16 +87,14 @@ Note that, depending upon the configured log level, you may see a fair amount of
 (undermidi:play-notes d '(seq-2a) 250 8)
 (undermidi:play-notes d '(seq-3a) 250 8)
 
-(undermidi:start)
 (undermidi:list-devices)
 (set device "midi_bus_1")
 (set device "provs-mini_provs-mini_midi_1_24_0")
 (set `#(ok ,d) (undermidi.devices:new device))
 (include-lib "priv/seqs/basic.lfe")
-(set notes (um.note:legnthen (um.chord:make-fuzzy (seq-3a) 80)))
+(set notes (um.note:lengthen (um.chord:make-fuzzy (seq-3a)) 80))
 (undermidi:play-notes d notes 8200 1)
 
-(undermidi:start)
 (set device "midi_bus_1")
 (set `#(ok ,d) (undermidi.devices:new device))
 (set cmaj7 (um.chord:lengthen (um.chord:make-fuzzy '(C4 E4 G4 B4)) 40))
