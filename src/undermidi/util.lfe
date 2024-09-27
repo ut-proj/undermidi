@@ -126,7 +126,9 @@
                           ,cyan    ,end
                           ,blue    ,end
                           ,magenta ,end
-
+                          ,blue    ,end
+                          ,cyan    ,end
+                          
                           ,cyan  ,end
 
                           ,green  ,end
