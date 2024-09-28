@@ -8,8 +8,6 @@
 (include-lib "logjam/include/logjam.hrl")
 
 (defun SERVER () (MODULE))
-(defun midi-devices () 'undermidi.devices)
-(defun device-manager () 'undermidi.device.supervisor)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   OTP Supervisor   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -27,8 +25,9 @@
   `#(ok #(#m(strategy one_for_one
              intensity 3
 	           period 60)
-            (,(child (device-manager))
-             ,(child (midi-devices))))))
+            (,(child 'undermidi.devices)
+             ,(child 'undermidi.playlist)
+             ,(child 'undermidi.device.supervisor)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Internal Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
