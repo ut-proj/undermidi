@@ -1,6 +1,6 @@
 ;;;; This gen_server is for keeping track of which devices a user is writing
 ;;;; MIDI to, and to what channels on those devices.
-(defmodule undermidi.playlist
+(defmodule undermidi.player.queue
   (behaviour gen_server)
   ;; gen_server implementation
   (export
@@ -33,9 +33,14 @@
 (defun SERVER () (MODULE))
 (defun DELIMITER () #"\n")
 (defun NAME () "playlist manager")
-
 (defun genserver-opts () '())
-(defun initial-state () '#m(queue () played () opts #m(repeat f)))
+
+(defun initial-state () '#m(queue ()
+                            played ()
+                            now-playing #m()
+                            opts #m(repeat f
+                                    shuffle f)))
+
 (defun unknown-command (data)
   `#(error ,(lists:flatten (++ "Unknown command: " data))))
 

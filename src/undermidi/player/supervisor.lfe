@@ -1,4 +1,4 @@
-(defmodule undermidi.device.supervisor
+(defmodule undermidi.player.supervisor
   (behaviour supervisor)
   (export
    (start_link 0))
@@ -8,7 +8,7 @@
 (include-lib "logjam/include/logjam.hrl")
 
 (defun SERVER () (MODULE))
-(defun NAME () "device connection supervisor")
+(defun NAME () "player supervisor")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   OTP Supervisor   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -27,8 +27,8 @@
              intensity 3
 	     period 60)
             (#m(id ,(MODULE)
-                start #(undermidi.device.client start_link ())
+                start #(undermidi.player.worker start_link ())
                 restart transient
                 type worker
                 shutdown brutal_kill
-                modules (undermidi.device.client))))))
+                modules (undermidi.player.worker))))))
