@@ -4,16 +4,16 @@
   (behaviour gen_server)
   ;; gen_server implementation
   (export
-    (start_link 0)
-    (stop 0))
+   (start_link 0)
+   (stop 0))
   ;; callback implementation
   (export
-    (code_change 3)
-    (handle_call 3)
-    (handle_cast 2)
-    (handle_info 2)
-    (init 1)
-    (terminate 2))
+   (code_change 3)
+   (handle_call 3)
+   (handle_cast 2)
+   (handle_info 2)
+   (init 1)
+   (terminate 2))
   ;; management API
   (export
    (new 1)
@@ -26,7 +26,7 @@
    (select-value 2))
   ;; debug API
   (export
-    (echo 1)))
+   (echo 1)))
 
 (include-lib "logjam/include/logjam.hrl")
 (include-lib "undermidi/include/errors.lfe")
