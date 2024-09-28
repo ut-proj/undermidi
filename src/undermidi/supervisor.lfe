@@ -26,8 +26,9 @@
              intensity 3
 	           period 60)
             (,(child 'undermidi.devices)
-             ,(child 'undermidi.playlist)
-             ,(child 'undermidi.device.supervisor)))))
+             ,(child 'undermidi.device.supervisor)
+             ,(child 'undermidi.player.queue)
+             ,(child 'undermidi.player.supervisor)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Internal Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
