@@ -38,17 +38,15 @@
 (defun SERVER () (MODULE))
 (defun DELIMITER () #"\n")
 (defun NAME () "MIDI devices manager")
-
 (defun table-name () 'devices)
+(defun genserver-opts () '())
+
 (defun ets ()
   `#m(name ,(table-name)
       description "An ETS table for maintaining device state"
       opts (set named_table public)))
-(defun genserver-opts () '())
-(defun initial-state ()
-  `#m(ets ,(ets)))
-(defun unknown-command (data)
-  `#(error ,(lists:flatten (++ "Unknown command: " data))))
+
+(defun initial-state () `#m(ets ,(ets)))
 
 ;;;;;::=-----------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   gen_server implementation   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -95,8 +93,8 @@
   ((`#(echo ,msg) _from state)
    `#(reply ,msg ,state))
   ;; Fall-through
-  ((message _from state)
-   `#(reply ,(unknown-command (io_lib:format "~p" `(,message))) ,state)))
+  ((msg _from state)
+   `#(reply ,(undermidi.errors:unknown-command msg) ,state)))
 
 (defun handle_cast
   ;; Command support

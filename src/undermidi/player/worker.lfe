@@ -30,20 +30,16 @@
 
 (defun DELIMITER () #"\n")
 (defun NAME () "player queue song/sequence handler")
-
 (defun genserver-opts () '())
-
-(defun unknown-command (data)
-  `#(error ,(lists:flatten (++ "Unknown command: " data))))
 
 ;;;;;::=-----------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   gen_server implementation   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=-----------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun start_link (device-name)
-  (log-info "Starting ~s ..." (list (NAME)))
+(defun start_link (song)
+  (log-info "Starting ~s for ~p ..." (list (NAME) song))
   (gen_server:start_link (MODULE)
-                         device-name
+                         song
                          (genserver-opts)))
 
 (defun stop (pid)
@@ -53,62 +49,65 @@
 ;;;::=-   callback implementation   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=---------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun init (device-name)
+(defun init (song)
    (log-debug "Initialising ...")
-   `#(ok #m(device ,device-name
-            channel ,(undermidi.devices:read device-name 'channel))))
+   `#(ok ,song))
 
 (defun handle_call
   ;; Management
-  ((`#(state) _from state)
-   `#(reply ,state ,state))
+  ((`#(state) _from song)
+   `#(reply ,song ,song))
   ;; Stop
-  (('stop _from state)
+  (('stop _from song)
    (log-notice "Stopping ~s ..." (list (NAME)))
-   `#(stop normal ok ,state))
+   `#(stop normal ok ,song))
   ;; Testing / debugging
-  ((`#(echo ,msg) _from state)
-   `#(reply ,msg ,state))
+  ((`#(echo ,msg) _from song)
+   `#(reply ,msg ,song))
   ;; Fall-through
-  ((message _from state)
-   `#(reply ,(unknown-command (io_lib:format "~p" `(,message))) ,state)))
+  ((msg _from song)
+   `#(reply ,(undermidi.errors:unknown-command msg) ,song)))
 
 (defun handle_cast
   ;; Command support
-  (((= `(#(command ,_)) cmd) state)
+  (((= `(#(command ,_)) cmd) song)
    (log-warn "Unsupported server command: ~p" `(,cmd))
-   `#(noreply ,state))
-  ((msg state)
+   `#(noreply ,song))
+  ((msg song)
    (log-warn "Got undexected cast msg: ~p" (list msg))
-   `#(noreply ,state)))
+   `#(noreply ,song)))
 
 (defun handle_info
   ;; Exit-handling
-  ((`#(EXIT ,_from normal) state)
+  ((`#(EXIT ,_from normal) song)
    (logger:info "~s is exiting (normal)." (list (NAME)))
-   `#(noreply ,state))
-  ((`#(EXIT ,_from shutdown) state)
+   `#(noreply ,song))
+  ((`#(EXIT ,_from shutdown) song)
    (logger:info "~s is exiting (shutdown)." (list (NAME)))
-   `#(noreply ,state))
-  ((`#(EXIT ,pid ,reason) state)
+   `#(noreply ,song))
+  ((`#(EXIT ,pid ,reason) song)
    (log-notice "Process ~p exited! (Reason: ~p)" `(,pid ,reason))
-   `#(noreply ,state))
+   `#(noreply ,song))
   ;; Fall-through
-  ((msg state)
+  ((msg song)
    (log-debug "Unknwon info: ~p" `(,msg))
-   `#(noreply ,state)))
+   `#(noreply ,song)))
 
 (defun terminate
-  ((_reason _state)
+  ((_reason _song)
    (log-notice "Terminating ~s ..." (list (NAME)))
    'ok))
 
-(defun code_change (_old-version state _extra)
-  `#(ok ,state))
+(defun code_change (_old-version song _extra)
+  `#(ok ,song))
 
 ;;;;;::=------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   Player Worker API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun play (pid caller)
+  (gen_server:call pid `#(play))
+  (gen_server:cast caller `#(finished ,(state pid))))
 
 (defun state (pid)
   (gen_server:call pid `#(state)))
