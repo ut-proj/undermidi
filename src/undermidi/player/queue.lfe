@@ -39,16 +39,21 @@
                             played ()
                             now-playing #m()
                             opts #m(repeat f
-                                    shuffle f)))
+                                    shuffle f
+                                    allow-skipping f)))
 
-(defun unknown-command (data)
-  `#(error ,(lists:flatten (++ "Unknown command: " data))))
+(defun make-entry (source)
+  (make-entry "" source))
 
-(defun make-entry (file)
-  (make-entry "" file))
+(defun make-entry (name source)
+  (make-entry name source 'file))
 
-(defun make-entry (name file)
-  `#m(name ,name file ,file))
+(defun make-entry (name source type)
+  `#m(name ,name
+      type ,type
+      source ,source
+      play-count 0
+      skip-count 0))
 
 ;;;;;::=-----------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   gen_server implementation   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -74,6 +79,13 @@
   `#(ok ,state))
 
 (defun handle_call
+  (('#(now-playing) _from state)
+   `#(reply ,(mref state 'now-playing) ,state))
+  (('#(pop-queue) _from (= `#m(queue (,song . ,tail)) state))
+   (let ((state (clj:-> state
+                        (mset 'queue tail)
+                        (mset 'now-playing song))))
+     `#(reply ,song ,state)))
   ;; Stop
   (('stop _from state)
    (log-notice "Stopping ~s ..." (list (NAME)))
@@ -84,8 +96,8 @@
   ((`#(echo ,msg) _from state)
    `#(reply ,msg ,state))
   ;; Fall-through
-  ((message _from state)
-   `#(reply ,(unknown-command (io_lib:format "~p" `(,message))) ,state)))
+  ((msg _from state)
+   `#(reply ,(undermidi.errors:unknown-command msg) ,state)))
 
 (defun handle_cast
   ;; Command support
@@ -93,6 +105,13 @@
    `#(noreply ,(mset state 'queue (++ q (list entry)))))
   ((`#(set-opt ,k ,v) (= `#m(opts ,opts) state))
    `#(noreply ,(mset state 'opts (mset opts k v))))
+  ((`#(finished ,song) state)
+   (let* ((song (mset song 'play-count (+ 1 (mref song 'play-count))))
+          (played (++ (mref state 'played) (list song)))
+          (state (clj:-> state
+                         (mset 'now-playing #m())
+                         (mset 'played played))))
+     `#(noreply ,state)))
   (((= `(#(command ,_)) cmd) state)
    (log-warn "Unsupported server command: ~p" `(,cmd))
    `#(noreply ,state))
@@ -134,8 +153,28 @@
 (defun add (name file)
   (gen_server:cast (SERVER) `#(add-entry ,(make-entry name file))))
 
+(defun now-playing ()
+  (now-playing:call (SERVER) '#(now-playing)))
+
+(defun now-playing
+  ((`#m(name ,name))
+   name)
+  ((_)
+   ""))
+
 (defun opt (k v)
   (gen_server:cast (SERVER) `#(set-opt ,k ,v)))
+
+(defun play-next ()
+  (case (now-playing)
+    ("" (let ((`#(ok ,pid) (supervisor:start_child
+                            'undermidi.player.supervisor
+                            (pop-queue))))
+          (undermidi.player.worker:play pid (self))))
+    (_ (undermidi.errors:action-cancelled "something is already being played"))))
+
+(defun pop-queue ()
+  (gen_server:call (SERVER) '#(pop-queue)))
 
 ;;;;;::=-----------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   debugging API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
