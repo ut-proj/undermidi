@@ -103,6 +103,9 @@ Note that, depending upon the configured log level, you may see a fair amount of
 (set dm7 (um.chord:lengthen (um.chord:make-fuzzy '(C4 D4 F4 A4)) 40))
 (set bdim7 (um.chord:lengthen (um.chord:make-fuzzy '(B3 D4 F4 A4)) 40))
 (undermidi:play-chords d (list cmaj7 am7 fmaj7 dm7 bdim7) 4200 0)
+
+;; Experiment in adding a playlist to the playlist gen_server
+rebar3 as playlist-add lfe run -- name seq1 file priv/seqs/basic.lfe
 ```
 
 ## API
