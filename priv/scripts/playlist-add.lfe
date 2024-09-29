@@ -25,7 +25,7 @@
               'undermidi.player.queue
               'add
               (list (binary_to_list n) (binary_to_list f)))
-    (lfe_io:format "Playlist state: ~p~n"
+    (lfe_io:format "Updated playlist state:~n~p~n"
                    (list (rpc:call 'undermidi@localhost
                                    'undermidi.player.queue
                                    'dump
