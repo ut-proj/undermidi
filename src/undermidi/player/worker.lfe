@@ -16,6 +16,7 @@
     (terminate 2))
   ;; device API
   (export
+   (play 2)
    (state 1))
   ;; debug API
   (export
@@ -31,6 +32,7 @@
 (defun DELIMITER () #"\n")
 (defun NAME () "player queue song/sequence handler")
 (defun genserver-opts () '())
+(defun play-timeout () 600000) ; 10 minutes, for super-long longs ...
 
 ;;;;;::=-----------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;::=-   gen_server implementation   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -54,14 +56,19 @@
    `#(ok ,song))
 
 (defun handle_call
-  ;; Management
-  ((`#(state) _from song)
+  ;; API
+  ((`#(play) _from song)
+   ;; TODO: change this to really play the sequence
+   (log-info "Getting ready to sleep ...")
+   (timer:sleep 10000)
    `#(reply ,song ,song))
   ;; Stop
   (('stop _from song)
    (log-notice "Stopping ~s ..." (list (NAME)))
    `#(stop normal ok ,song))
   ;; Testing / debugging
+  ((`#(state) _from song)
+   `#(reply ,song ,song))
   ((`#(echo ,msg) _from song)
    `#(reply ,msg ,song))
   ;; Fall-through
@@ -106,7 +113,7 @@
 ;;;;;::=------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun play (pid caller)
-  (gen_server:call pid `#(play))
+  (gen_server:call pid `#(play) (play-timeout))
   (gen_server:cast caller `#(finished ,(state pid))))
 
 (defun state (pid)

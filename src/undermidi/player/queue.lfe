@@ -14,10 +14,13 @@
    (handle_info 2)
    (init 1)
    (terminate 2))
-  ;; management API
+  ;; playlist API
   (export
    (add 1) (add 2)
-   (opt 2))
+   (opt 2)
+   (now-playing 0) (now-playing 1)
+   (play-next 0)
+   (pop-queue 0))
   ;; debug API
   (export
    (dump 0)
@@ -154,7 +157,7 @@
   (gen_server:cast (SERVER) `#(add-entry ,(make-entry name file))))
 
 (defun now-playing ()
-  (now-playing:call (SERVER) '#(now-playing)))
+  (now-playing (gen_server:call (SERVER) '#(now-playing))))
 
 (defun now-playing
   ((`#m(name ,name))
@@ -169,7 +172,7 @@
   (case (now-playing)
     ("" (let ((`#(ok ,pid) (supervisor:start_child
                             'undermidi.player.supervisor
-                            (pop-queue))))
+                            `(,(pop-queue)))))
           (undermidi.player.worker:play pid (self))))
     (_ (undermidi.errors:action-cancelled "something is already being played"))))
 
