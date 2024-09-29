@@ -16,7 +16,7 @@
     (terminate 2))
   ;; device API
   (export
-   (play 2)
+   (play 1)
    (state 1))
   ;; debug API
   (export
@@ -31,6 +31,7 @@
 
 (defun DELIMITER () #"\n")
 (defun NAME () "player queue song/sequence handler")
+(defun QUEUE-SERVER () 'undermidi.player.queue)
 (defun genserver-opts () '())
 (defun play-timeout () 600000) ; 10 minutes, for super-long longs ...
 
@@ -56,12 +57,6 @@
    `#(ok ,song))
 
 (defun handle_call
-  ;; API
-  ((`#(play) _from song)
-   ;; TODO: change this to really play the sequence
-   (log-info "Getting ready to sleep ...")
-   (timer:sleep 10000)
-   `#(reply ,song ,song))
   ;; Stop
   (('stop _from song)
    (log-notice "Stopping ~s ..." (list (NAME)))
@@ -76,6 +71,13 @@
    `#(reply ,(undermidi.errors:unknown-command msg) ,song)))
 
 (defun handle_cast
+  ;; API
+  ((`#(play ,worker-pid) song)
+   ;; TODO: change this to really play the sequence
+   (log-info "Getting ready to sleep ...")
+   (timer:sleep 10000)
+   (gen_server:cast (QUEUE-SERVER) `#(finished ,song))
+   `#(noreply ,song))
   ;; Command support
   (((= `(#(command ,_)) cmd) song)
    (log-warn "Unsupported server command: ~p" `(,cmd))
@@ -112,9 +114,8 @@
 ;;;::=-   Player Worker API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun play (pid caller)
-  (gen_server:call pid `#(play) (play-timeout))
-  (gen_server:cast caller `#(finished ,(state pid))))
+(defun play (pid)
+  (gen_server:cast pid `#(play ,pid)))
 
 (defun state (pid)
   (gen_server:call pid `#(state)))
