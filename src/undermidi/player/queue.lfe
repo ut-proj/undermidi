@@ -173,7 +173,7 @@
     ("" (let ((`#(ok ,pid) (supervisor:start_child
                             'undermidi.player.supervisor
                             `(,(pop-queue)))))
-          (undermidi.player.worker:play pid (self))))
+          (undermidi.player.worker:play pid)))
     (_ (undermidi.errors:action-cancelled "something is already being played"))))
 
 (defun pop-queue ()
