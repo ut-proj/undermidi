@@ -16,7 +16,7 @@
    (terminate 2))
   ;; management API
   (export
-   (new 1)
+   (new 1) (new 2)
    (read 0) (read 1) (read 2)
    (write 2) (write 3))
   ;; data API
@@ -94,7 +94,7 @@
    `#(reply ,msg ,state))
   ;; Fall-through
   ((msg _from state)
-   `#(reply ,(undermidi.errors:unknown-command msg) ,state)))
+   `#(reply ,(ERR-UNKNOWN-COMMAND msg) ,state)))
 
 (defun handle_cast
   ;; Command support
@@ -158,7 +158,7 @@
    (new (atom_to_list midi-device-name) midi-channel))
   ((midi-device-name midi-channel)
    (if (not (lists:member midi-device-name (++ (um.nif:inputs) (um.nif:outputs))))
-     (ERR_NO_DEVICE)
+     (ERR-NO-DEVICE)
      (progn
        (add-device midi-device-name midi-channel)
        (supervisor:start_child 'undermidi.device.supervisor `(,midi-device-name))))))
