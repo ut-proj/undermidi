@@ -59,7 +59,7 @@
 ;;;;;::=---------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun init (device-name)
-   (log-debug "Initialising ...")
+   (log-debug "Initialising device client ...")
    `#(ok #m(device ,device-name
             channel ,(undermidi.devices:read device-name 'channel))))
 
