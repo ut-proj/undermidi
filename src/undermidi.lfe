@@ -52,37 +52,37 @@
   ((pid note) (when (is_atom note))
    (play-note pid (um.note:make note)))
   ((pid note)
-   (undermidi.device.conn:apply pid
-                                'um.note
-                                'play-note
-                                (list note))))
+   (undermidi.device.client:apply pid
+                                  'um.note
+                                  'play-note
+                                  (list note))))
 
 (defun play-notes
   ((pid (= `(,head . ,_) notes)) (when (is_atom head))
    (play-notes pid (um.note:make notes)))
   ((pid notes)
-   (undermidi.device.conn:apply pid
-                                'um.note
-                                'play-notes
-                                (list notes))))
+   (undermidi.device.client:apply pid
+                                  'um.note
+                                  'play-notes
+                                  (list notes))))
 
 (defun play-notes
   ((pid (= `(,head . ,_) notes) delay) (when (is_atom head))
    (play-notes pid (um.note:make notes) delay))
   ((pid notes delay)
-   (undermidi.device.conn:apply pid
-                                'um.note
-                                'play-notes
-                                (list notes delay))))
+   (undermidi.device.client:apply pid
+                                  'um.note
+                                  'play-notes
+                                  (list notes delay))))
 
 (defun play-notes
   ((pid (= `(,head . ,_) notes) delay repeats) (when (is_atom head))
    (play-notes pid (um.note:make notes) delay repeats))
   ((pid notes delay repeats)
-   (undermidi.device.conn:apply pid
-                                'um.note
-                                'play-notes
-                                (list notes delay repeats))))
+   (undermidi.device.client:apply pid
+                                  'um.note
+                                  'play-notes
+                                  (list notes delay repeats))))
 
 ;; Chords API
 
@@ -90,28 +90,28 @@
   ((pid (= `(,head . ,_) notes)) (when (is_atom head))
    (play-chord pid (um.chord:make notes)))
   ((pid chord)
-   (undermidi.device.conn:apply pid
-                                'um.chord
-                                'play
-                                (list chord))))
+   (undermidi.device.client:apply pid
+                                  'um.chord
+                                  'play
+                                  (list chord))))
 
 (defun play-chords (pid chords)
-  (undermidi.device.conn:apply pid
-                               'um.chord
-                               'play-chords
-                               (list chords)))
+  (undermidi.device.client:apply pid
+                                 'um.chord
+                                 'play-chords
+                                 (list chords)))
 
 (defun play-chords (pid chords delay)
-  (undermidi.device.conn:apply pid
-                               'um.chord
-                               'play-chords
-                               (list chords delay)))
+  (undermidi.device.client:apply pid
+                                 'um.chord
+                                 'play-chords
+                                 (list chords delay)))
 
 (defun play-chords (pid chords delay repeats)
-  (undermidi.device.conn:apply pid
-                               'um.chord
-                               'play-chords
-                               (list chords delay repeats)))
+  (undermidi.device.client:apply pid
+                                 'um.chord
+                                 'play-chords
+                                 (list chords delay repeats)))
 
 ;;; Aliases
 

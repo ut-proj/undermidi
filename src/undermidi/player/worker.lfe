@@ -16,7 +16,7 @@
     (terminate 2))
   ;; device API
   (export
-   (play 1)
+   (play 2)
    (state 1))
   ;; debug API
   (export
@@ -53,7 +53,7 @@
 ;;;;;::=---------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun init (song)
-   (log-debug "Initialising ...")
+   (log-debug "Initialising ~s ..." (list (NAME)))
    `#(ok ,song))
 
 (defun handle_call
@@ -68,14 +68,15 @@
    `#(reply ,msg ,song))
   ;; Fall-through
   ((msg _from song)
-   `#(reply ,(undermidi.errors:unknown-command msg) ,song)))
+   `#(reply ,(ERR-UNKNOWN-COMMAND msg) ,song)))
 
 (defun handle_cast
   ;; API
-  ((`#(play ,worker-pid) song)
+  ((`#(play ,worker-pid ,device-pid) (= `#m(source ,source) song))
+   (call source 'play device-pid)
    ;; TODO: change this to really play the sequence
-   (log-info "Getting ready to sleep ...")
-   (timer:sleep 10000)
+   ;(log-info "Getting ready to sleep ...")
+   ;(timer:sleep 10000)
    (gen_server:cast (QUEUE-SERVER) `#(finished ,song))
    `#(noreply ,song))
   ;; Command support
@@ -114,8 +115,8 @@
 ;;;::=-   Player Worker API   -=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;::=------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun play (pid)
-  (gen_server:cast pid `#(play ,pid)))
+(defun play (worker-pid device-pid)
+  (gen_server:cast worker-pid `#(play ,worker-pid ,device-pid)))
 
 (defun state (pid)
   (gen_server:call pid `#(state)))
