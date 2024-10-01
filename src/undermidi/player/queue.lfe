@@ -19,6 +19,8 @@
    (make-entry 1) (make-entry 2) (make-entry 3)
    (default-entry 0)
    (add 1) (add 2) (add 3)
+   (device 1)
+   (channel 1)
    (clear 0)
    (opt 1) (opt 2)
    (now-playing 0) (now-playing 1)
