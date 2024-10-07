@@ -105,7 +105,150 @@ Note that, depending upon the configured log level, you may see a fair amount of
 (undermidi:play-chords d (list cmaj7 am7 fmaj7 dm7 bdim7) 4200 0)
 
 ;; Experiment in adding a playlist to the playlist gen_server
-rebar3 as playlist-add lfe run -- name seq1 file priv/seqs/basic.lfe
+
+(set device "model_15")
+(set `#(ok ,d) (undermidi.devices:new device))
+(priv.seqs.basic:play d)
+
+(undermidi.player.queue:dump)
+
+rebar3 as playlist-add lfe run -- name:seq1 type:mod source:priv.seqs.basic
+
+(undermidi.player.queue:dump)
+(undermidi.player.queue:play-next "model_15")
+
+;; new sequence
+
+(set device "provs-mini_provs-mini_midi_1_24_0")
+(set device "model_15")
+(set device "midi_bus_1")
+(set `#(ok ,d) (undermidi.devices:new device))
+(priv.seqs.rhythmic01:play d)
+
+;; |1      2       3       4       |1      2       3       4       
+;; '   '   '   '   '   '   '   '   '   '   '   '   '   '   '   '   
+;; 1/4 -  1/8 1/4  -  1/4  -  1/8  1/4 -   .   .   .   .   .   .   
+
+(set d1 400)
+(set p1 50)
+(set n1 (um.note:make 'E4 64 (- (* 2 d1) p1)))
+(set n2 (um.note:make 'E4 64 (- d1 p1)))
+(set n3 (um.note:make 'E5 64 (- d1 p1)))
+(set n4 (um.note:make 'B4 64 (- (* 2 d1) p1)))
+(set n5 (um.note:make 'A4 64 (- (* 2 d1) p1)))
+
+(set r1 (um.note:make 'E0 0 (* 2 d1)))
+(set r2 (um.note:make 'E0 0 p1))
+
+(set n6 (um.note:make 'F#4 64 (- (* 2 d1) p1)))
+(set n7 (um.note:make 'F#4 64 (- d1 p1)))
+(set n8 (um.note:make 'F#5 64 (- d1 p1)))
+(set n9 (um.note:make 'C#5 64 (- (* 2 d1) p1)))
+(set n10 (um.note:make 'D#5 64 (- (* 2 d1) p1)))
+
+(set n11 (um.note:make 'B3 64 (- (* 2 d1) p1)))
+(set n12 (um.note:make 'C#4 64 (- d1 p1)))
+(set n13 (um.note:make 'B4 64 (- d1 p1)))
+(set n14 (um.note:make 'F#4 64 (- (* 2 d1) p1)))
+(set n15 (um.note:make 'D#5 64 (- (* 2 d1) p1)))
+
+(set motive1 (list n1  r2 n2  r2 n4  r2 n1  r2 n3  r2 n1  r1 r1 r1))
+(set motive2 (list n1  r2 n2  r2 n5  r2 n1  r2 n3  r2 n1  r1 r1 r1))
+(set motive3 (list n6  r2 n7  r2 n9  r2 n6  r2 n8  r2 n6  r1 r1 r1))
+(set motive4 (list n6  r2 n7  r2 n10 r2 n6  r2 n8  r2 n6  r1 r1 r1))
+(set motive5 (list n11 r2 n12 r2 n14 r2 n11 r2 n13 r2 n11 r1 r1 r1))
+(set motive6 (list n11 r2 n12 r2 n15 r2 n11 r2 n13 r2 n11 r1 r1 r1))
+
+(set phrase1 (list motive1 motive1 motive2 motive1))
+(set phrase2 (list motive3 motive3 motive4 motive3))
+(set phrase3 (list motive5 motive5 motive6 motive5))
+(set phrases (++ phrase1 phrase2 phrase1 phrase3 phrase1))
+
+(defun play (phrases)
+  (list-comp ((<- phrase phrases))
+    (list-comp ((<- n phrase))
+        (progn 
+          (undermidi:play-note d n)
+          (timer:sleep (mref n 'duration))))))
+
+(play phrases)
+  
+(defun repeat
+  ((_ 0)
+   'ok)
+  ((phrases count)
+   (play phrases)
+   (repeat phrases (- count 1))))
+
+(repeat phrases 2)
+
+;; Windchimes
+
+;; BTW, if you use Kontakt, from Native Instruments, this is a free
+;; wind-chime sampled instrument (and what I used to test this):
+;; * https://pulse.audio/product/wind-chimes-by-jon-meyer-sounds/
+
+(set device "midi_bus_1")
+(set `#(ok ,d) (undermidi.devices:new device))
+(set notes '(A2 D3 F3 G3 A3 D4 F4 A4 D5 A5))
+(set seq-len 100)
+(set v-variation 20)
+(set delay-variation 1.0)
+(set v-start 48)
+(set delay-start 0.5)
+
+(defun choices ()
+  (choices notes seq-len))
+  
+(defun choices (notes count)
+  (list-comp ((<- _ (lists:seq 1 count)))
+    (+ 1 (round (* (- (length notes) 1) (rand:uniform))))))
+
+(defun new-delay (last-delay)
+  (let ((d (+ last-delay (rand:normal 0 delay-variation))))
+    (cond
+     ((> d 8) 4)
+     ((> d 0) d)
+     ('true (* (rand:uniform) 0.1)))))
+
+(defun new-velocity (last-v)
+  (let ((v (trunc (+ last-v (rand:normal 0 v-variation)))))
+    (cond 
+     ((> v 100) 100)
+     ((< v 1) 1)
+     ('true  v))))
+
+(defun note-duration (delay)
+  (let ((d (* delay 1000)))
+    (cond
+     ((>= d 100) 100)
+     ((< d 10) 10)
+     ((< d 100) (round (- d 10)))
+     ('true 100))))
+
+(defun select-notes
+  ((`(,head . ,tail) count) (when (< count 2))
+   (list (list head) tail))
+  ((choices count) (when (<= count 4))
+   (select-notes
+      
+(defun play ()
+  (play (choices) v-start delay-start))
+
+(defun play
+ (('() _ _)
+  'ok)
+ ((`(,choice . ,choices) last-v last-delay)
+  (let* ((v (new-velocity last-v))
+         (delay (new-delay last-delay))
+         (dur (note-duration delay))
+         (n (um.note:make (lists:nth choice notes) v dur)))
+    (lfe_io:format "note: ~p (delay: ~.2fs; remaining: ~p)~n"
+                   (list n (float delay) (length choices)))
+    (undermidi:play-note d n)
+    (timer:sleep (round (* 1000 delay)))
+    (play choices v delay))))
+
 ```
 
 ## API
