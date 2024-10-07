@@ -35,10 +35,11 @@
      ('true (* (rand:uniform) 0.1)))))
 
 (defun new-velocity (last-v)
-  (let ((v (trunc (+ last-v (rand:normal 0 (v-variation))))))
+  (let ((v (round (+ last-v (rand:normal 0 (v-variation))))))
     (cond 
      ((> v 100) 100)
      ((< v 1) 1)
+     ((< v 15) (abs v))
      ('true  v))))
 
 (defun note-duration (delay)
@@ -50,7 +51,10 @@
      ('true 100))))
       
 (defun play ()
-  (play (device-pid) (choices) (v-start) (delay-start)))
+  (play (device-pid)))
+
+(defun play (device-pid)
+  (play device-pid (choices) (v-start) (delay-start)))
 
 (defun play
  ((_ '() _ _)
@@ -59,10 +63,10 @@
   (let* ((v (new-velocity last-v))
          (delay (new-delay last-delay))
          (dur (note-duration delay))
-         (n (um.note:make (lists:nth choice notes) v dur)))
+         (n (um.note:make (lists:nth choice (notes)) v dur)))
     (lfe_io:format "note: ~p (delay: ~.2fs; remaining: ~p)~n"
                    (list n (float delay) (length choices)))
     (undermidi:play-note pid n)
     (timer:sleep (round (* 1000 delay)))
-    (play choices v delay))))
+    (play pid choices v delay))))
 
