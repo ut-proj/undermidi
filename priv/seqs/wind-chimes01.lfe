@@ -10,6 +10,9 @@
   (let ((`#(ok ,d) (undermidi.devices:new (device))))
     d))
 
+;; The lowest note is 110 Hz, the highest is 880 ... so the wind chime
+;; tubes for this would range in length from 57" (145 cm) to 20" (51 cm),
+;; if made out of aluminium.
 (defun notes () '(A2 D3 F3 G3 A3 D4 F4 A4 D5 A5))
 (defun seq-len () 100)
 (defun v-variation () 20)
