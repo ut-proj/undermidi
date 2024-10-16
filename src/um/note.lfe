@@ -435,7 +435,7 @@ C       0
 ;;; NOTE VALUE & DURATION ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun note-values ()
+(defun values ()
   '(2                 ; double note / breve 
     1                 ; whole note / semibreve 
     1/2               ; half note / minim 
@@ -446,6 +446,18 @@ C       0
     1/64              ; sixty-fourth note / hemidemisemiquaver
     1/128             ; semihemidemisemiquaver
     ))
+
+(defun value-multipliers ()
+  `#m(;; notes
+      (n 1.0)
+      (n. 1.5)
+      (n.. 1.75)
+      (n... 1.875)
+      ;; rests
+      (r 1.0)
+      (r. 1.5)
+      (r.. 1.75)
+      (r... 1.875)))
 
 (defun fuzzy-duration (ms)
   (fuzzy-duration ms 2))
