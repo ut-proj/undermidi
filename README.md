@@ -249,6 +249,53 @@ rebar3 as playlist-add lfe run -- name:seq1 type:mod source:priv.seqs.basic
     (timer:sleep (round (* 1000 delay)))
     (play choices v delay))))
 
+;; Ambient chord progression 1
+
+(set device "provs-mini_provs-mini_midi_1_24_0")
+(set `#(ok ,d) (undermidi.devices:new device))
+
+(set cd1 (um.chord:lengthen (um.chord:make-fuzzy '(A3 C4 E4 A4)) 40))
+(set cd2 (um.chord:lengthen (um.chord:make-fuzzy '(A3 C4 F4 A4)) 40))
+(set cd3 (um.chord:lengthen (um.chord:make-fuzzy '(G3 C4 F4 G4)) 40))
+(set cd4 (um.chord:lengthen (um.chord:make-fuzzy '(G3 C4 E4 G4)) 40))
+(set cd5 (um.chord:lengthen (um.chord:make-fuzzy '(F3 C4 E4 F4)) 40))
+(set cd6 (um.chord:lengthen (um.chord:make-fuzzy '(F3 C4 D4 F4)) 40))
+(set cd7 (um.chord:lengthen (um.chord:make-fuzzy '(G3 C4 D4 G4)) 40))
+(set cd8 (um.chord:lengthen (um.chord:make-fuzzy '(G3 B3 A4)) 40))
+(set cd9 (um.chord:lengthen (um.chord:make-fuzzy '(A3 C4 B4)) 40))
+(set cd10 (um.chord:lengthen (um.chord:make-fuzzy '(A3 C4 A4 E5)) 40))
+(undermidi:play-chords d (list cd1 cd2 cd3 cd4 cd5 cd6 cd7 cd8 cd9 cd10) 12800 0)
+
+;; Ambient chord progression 2
+
+(set device "provs-mini_provs-mini_midi_1_24_0")
+(set `#(ok ,d) (undermidi.devices:new device))
+
+(set cd1 (um.chord:lengthen (um.chord:make-fuzzy '(D3 F3 A3)) 40))
+(set cd2 (um.chord:lengthen (um.chord:make-fuzzy '(D3 G3 B3)) 40))
+(set cd3 (um.chord:lengthen (um.chord:make-fuzzy '(E3 G3 C4)) 40))
+(set cd4 (um.chord:lengthen (um.chord:make-fuzzy '(F3 A3 C4)) 40))
+(set cd5 (um.chord:lengthen (um.chord:make-fuzzy '(E3 A3 C4)) 40))
+(set cd6 (um.chord:lengthen (um.chord:make-fuzzy '(F3 A3 D4)) 40))
+(set cd7 (um.chord:lengthen (um.chord:make-fuzzy '(G3 D4 B4)) 40))
+(set cd8 (um.chord:lengthen (um.chord:make-fuzzy '(A3 E4 C5)) 40))
+(set cd9 (um.chord:lengthen (um.chord:make-fuzzy '(A3 F4 C5)) 40))
+(set cd10 (um.chord:lengthen (um.chord:make-fuzzy '(A3 D4 F5)) 40))
+(set cd11 (um.chord:lengthen (um.chord:make-fuzzy '(G3 D4 B5)) 40))
+(set cd12 (um.chord:lengthen (um.chord:make-fuzzy '(E3 C4 A5)) 40))
+(set cd13 (um.chord:lengthen (um.chord:make-fuzzy '(F3 D4 A5)) 40))
+(set cd14 (um.chord:lengthen (um.chord:make-fuzzy '(F3 D4 A4)) 40))
+(set cd15 (um.chord:lengthen (um.chord:make-fuzzy '(B2 D4 G4)) 40))
+(set cd16 (um.chord:lengthen (um.chord:make-fuzzy '(E2 C4 G4)) 40))
+(set cd17 (um.chord:lengthen (um.chord:make-fuzzy '(A1 C4 F4)) 40))
+(set cd18 (um.chord:lengthen (um.chord:make-fuzzy '(D1 A2 F3 D4)) 40))
+(undermidi:play-chords d (++ (list cd1 cd2 cd3 cd4)
+                             (list cd1 cd2 cd5 cd4)
+                             (list cd6 cd7 cd8 cd9)
+                             (list cd10 cd11 cd12 cd13)
+                             (list cd14 cd15 cd16 cd17 cd18))
+                         8400 0)
+
 ```
 
 ## API
