@@ -4,7 +4,7 @@ This mini-guide is provided to help developers get `undermidi` up and running as
 
 ## Overview
 
-* git, Erlang, rebar3, undermidi, midiserver
+* git, Erlang, rebar3, undermidi
 * System MIDI
 * Adding a Software MIDI Device
 * Making Sounds
