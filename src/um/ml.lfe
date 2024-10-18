@@ -1,4 +1,4 @@
-;;;; This module defines wrapper functions for midilib
+;;;; This module defines wrapper functions for midilib (ml == midilib)
 (defmodule um.ml
   (export all))
 
