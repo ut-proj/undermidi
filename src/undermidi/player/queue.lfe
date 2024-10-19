@@ -70,7 +70,7 @@
 
 (defun default-entry ()
   (make-entry "playlist entry"
-              'priv.seqs.basic
+              'priv.patches.seqs.basic
               "mod"))
 
 ;;;;;::=-----------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
