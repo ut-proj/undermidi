@@ -68,7 +68,7 @@
 
 (defun init
   (((= `#m(ets #m(name ,table-name opts ,table-opts)) state))
-   (log-debug "Initialising %s ..." `(,(NAME)))
+   (log-debug "Initialising ~s ..." `(,(NAME)))
    (ets:new table-name table-opts)
    (log-debug "ETS table info: ~p" `(,(undermidi.util:table-info table-name)))
    (erlang:process_flag 'trap_exit 'true)
