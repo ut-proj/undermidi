@@ -90,7 +90,7 @@ Note that, depending upon the configured log level, you may see a fair amount of
 
 (undermidi.player.queue:dump)
 
-rebar3 as playlist-add lfe run -- name:seq1 type:mod source:priv.seqs.basic
+rebar3 as playlist-add lfe run -- name:seq1 type:mod source:priv.patches.progs.slow-chords01
 
 (undermidi.player.queue:dump)
 (undermidi.player.queue:play-next "model_15")
