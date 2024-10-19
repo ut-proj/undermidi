@@ -187,26 +187,40 @@ rebar3 as playlist-add lfe run -- name:seq1 type:mod source:priv.seqs.basic
 (set device "provs-mini_provs-mini_midi_1_24_0")
 (set `#(ok ,d) (undermidi.devices:new device))
 
-(set cd1 (um.chord:lengthen (um.chord:make-fuzzy '(A3 C4 E4 A4)) 40))
-(set cd2 (um.chord:lengthen (um.chord:make-fuzzy '(A3 C4 F4 A4)) 40))
-(set cd3 (um.chord:lengthen (um.chord:make-fuzzy '(G3 C4 F4 G4)) 40))
-(set cd4 (um.chord:lengthen (um.chord:make-fuzzy '(G3 C4 E4 G4)) 40))
-(set cd5 (um.chord:lengthen (um.chord:make-fuzzy '(F3 C4 E4 F4)) 40))
-(set cd6 (um.chord:lengthen (um.chord:make-fuzzy '(F3 C4 D4 F4)) 40))
-(set cd7 (um.chord:lengthen (um.chord:make-fuzzy '(G3 C4 D4 G4)) 40))
-(set cd8 (um.chord:lengthen (um.chord:make-fuzzy '(G3 B3 A4)) 40))
-(set cd9 (um.chord:lengthen (um.chord:make-fuzzy '(A3 C4 B4)) 40))
-(set cd10 (um.chord:lengthen (um.chord:make-fuzzy '(A3 C4 A4 E5)) 40))
-(undermidi:play-chords d (list cd1 cd2 cd3 cd4 cd5 cd6 cd7 cd8 cd9 cd10) 12800 0)
+(priv.progs.slow-chords01:play d)
 
 ;; Ambient chord progression 2
 
 (set device "provs-mini_provs-mini_midi_1_24_0")
+(set device "core_midi_general")
 (set `#(ok ,d) (undermidi.devices:new device))
 
-(set cd1 (um.chord:lengthen (um.chord:make-fuzzy '(D3 F3 A3)) 40))
-(set cd2 (um.chord:lengthen (um.chord:make-fuzzy '(D3 G3 B3)) 40))
-(set cd3 (um.chord:lengthen (um.chord:make-fuzzy '(E3 G3 C4)) 40))
+(defun cd1 () '(D3 F3 A3))
+(defun cd2 () '(D3 G3 B3))
+(defun cd3 () '(E3 G3 C4))
+(defun cd4 () '(F3 A3 C4))
+(defun cd5 () '(E3 A3 C4))
+(defun cd6 () '(F3 A3 D4))
+(defun cd7 () '(G3 D4 B4))
+(defun cd8 () '(A3 E4 C5))
+(defun cd9 () '(A3 F4 C5))
+(defun cd10 () '(A3 D4 F5))
+(defun cd11 () '(G3 D4 B5))
+(defun cd12 () '(E3 C4 A5))
+(defun cd13 () '(F3 D4 A5))
+(defun cd14 () '(F3 D4 A4))
+(defun cd15 () '(B2 D4 G4))
+(defun cd16 () '(E2 C4 G4))
+(defun cd17 () '(A1 C4 F4))
+(defun cd18 () '(D1 A2 F3 D4))
+
+(set all-chords
+
+(undermidi:play-chords d (prep-chords all-chords 40) 8400 0)
+
+(set cd1 (um.chord:make-fuzzy '(D3 F3 A3)) 40))
+(set cd2 (um.chord:make-fuzzy '(D3 G3 B3)) 40))
+(set cd3 (um.chord:make-fuzzy '(E3 G3 C4)) 40))
 (set cd4 (um.chord:lengthen (um.chord:make-fuzzy '(F3 A3 C4)) 40))
 (set cd5 (um.chord:lengthen (um.chord:make-fuzzy '(E3 A3 C4)) 40))
 (set cd6 (um.chord:lengthen (um.chord:make-fuzzy '(F3 A3 D4)) 40))
@@ -222,12 +236,6 @@ rebar3 as playlist-add lfe run -- name:seq1 type:mod source:priv.seqs.basic
 (set cd16 (um.chord:lengthen (um.chord:make-fuzzy '(E2 C4 G4)) 40))
 (set cd17 (um.chord:lengthen (um.chord:make-fuzzy '(A1 C4 F4)) 40))
 (set cd18 (um.chord:lengthen (um.chord:make-fuzzy '(D1 A2 F3 D4)) 40))
-(undermidi:play-chords d (++ (list cd1 cd2 cd3 cd4)
-                             (list cd1 cd2 cd5 cd4)
-                             (list cd6 cd7 cd8 cd9)
-                             (list cd10 cd11 cd12 cd13)
-                             (list cd14 cd15 cd16 cd17 cd18))
-                         8400 0)
 
 ```
 

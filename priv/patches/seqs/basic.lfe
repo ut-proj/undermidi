@@ -1,4 +1,4 @@
-(defmodule priv.seqs.basic
+(defmodule priv.patches.seqs.basic
   (export all))
 
 (defun seq-1a ()

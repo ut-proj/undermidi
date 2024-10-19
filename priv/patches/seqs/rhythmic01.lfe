@@ -1,4 +1,4 @@
-(defmodule priv.seqs.rhythmic01
+(defmodule priv.patches.seqs.rhythmic01
   (export all))
 
 (defun n8 () 400)           ; 8th note duration, raw
