@@ -1,14 +1,10 @@
 (defmodule priv.seqs.wind-chimes01
   (export all))
 
-;; If you use Kontakt, from Native Instruments, this is a free
+;; If you use Kontakt, from Native Instruments, there is a free
 ;; wind-chime sampled instrument (and what I used to test this):
 ;; * https://pulse.audio/product/wind-chimes-by-jon-meyer-sounds/
 
-(defun device () "midi_bus_1")
-(defun device-pid ()
-  (let ((`#(ok ,d) (undermidi.devices:new (device))))
-    d))
 
 ;; The lowest note is 110 Hz, the highest is 880 ... so the wind chime
 ;; tubes for this would range in length from 57" (145 cm) to 20" (51 cm),
@@ -51,7 +47,7 @@
      ('true 100))))
       
 (defun play ()
-  (play (device-pid)))
+  (play (priv.seqs.common:default-device-pid)))
 
 (defun play (device-pid)
   (play device-pid (choices) (v-start) (delay-start)))
