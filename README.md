@@ -75,34 +75,12 @@ Note that, depending upon the configured log level, you may see a fair amount of
 (set notes (um.note:make '(C3 C3 Eb3 C3 Eb4 Bb3 C4 C3)))
 (um.note:play-notes device channel notes 250 8)
 
+;; Basic sequence
+
 (undermidi:list-devices)
 (set device "model_15")
 (set `#(ok ,d) (undermidi.devices:new device))
-(undermidi.device.conn:echo d "testing ...")
-(undermidi:play-note d 'C3)
-(undermidi:play-notes d '(C3 C3 Eb3 C3 C3 C3 C3 C4) 250 8)
-(include-lib "priv/seqs/basic.lfe")
-(undermidi:play-notes d (seq-1a) 250 8)
-(undermidi:play-notes d '(seq-1b) 250 8)
-(undermidi:play-notes d '(seq-2a) 250 8)
-(undermidi:play-notes d '(seq-3a) 250 8)
-
-(undermidi:list-devices)
-(set device "midi_bus_1")
-(set device "provs-mini_provs-mini_midi_1_24_0")
-(set `#(ok ,d) (undermidi.devices:new device))
-(include-lib "priv/seqs/basic.lfe")
-(set notes (um.note:lengthen (um.chord:make-fuzzy (seq-3a)) 80))
-(undermidi:play-notes d notes 8200 1)
-
-(set device "midi_bus_1")
-(set `#(ok ,d) (undermidi.devices:new device))
-(set cmaj7 (um.chord:lengthen (um.chord:make-fuzzy '(C4 E4 G4 B4)) 40))
-(set am7 (um.chord:lengthen (um.chord:make-fuzzy '(C4 E4 G4 A4)) 40))
-(set fmaj7 (um.chord:lengthen (um.chord:make-fuzzy '(C4 E4 F4 A4)) 40))
-(set dm7 (um.chord:lengthen (um.chord:make-fuzzy '(C4 D4 F4 A4)) 40))
-(set bdim7 (um.chord:lengthen (um.chord:make-fuzzy '(B3 D4 F4 A4)) 40))
-(undermidi:play-chords d (list cmaj7 am7 fmaj7 dm7 bdim7) 4200 0)
+(priv.patches.seqs.basic:play d)
 
 ;; Experiment in adding a playlist to the playlist gen_server
 
@@ -117,77 +95,21 @@ rebar3 as playlist-add lfe run -- name:seq1 type:mod source:priv.seqs.basic
 (undermidi.player.queue:dump)
 (undermidi.player.queue:play-next "model_15")
 
-;; new sequence
+;; rhythmic sequence
 
 (set device "provs-mini_provs-mini_midi_1_24_0")
 (set device "model_15")
 (set device "midi_bus_1")
 (set `#(ok ,d) (undermidi.devices:new device))
-(priv.seqs.rhythmic01:play d)
-
-;; |1      2       3       4       |1      2       3       4       
-;; '   '   '   '   '   '   '   '   '   '   '   '   '   '   '   '   
-;; 1/4 -  1/8 1/4  -  1/4  -  1/8  1/4 -   .   .   .   .   .   .   
-
-(set d1 400)
-(set p1 50)
-(set n1 (um.note:make 'E4 64 (- (* 2 d1) p1)))
-(set n2 (um.note:make 'E4 64 (- d1 p1)))
-(set n3 (um.note:make 'E5 64 (- d1 p1)))
-(set n4 (um.note:make 'B4 64 (- (* 2 d1) p1)))
-(set n5 (um.note:make 'A4 64 (- (* 2 d1) p1)))
-
-(set r1 (um.note:make 'E0 0 (* 2 d1)))
-(set r2 (um.note:make 'E0 0 p1))
-
-(set n6 (um.note:make 'F#4 64 (- (* 2 d1) p1)))
-(set n7 (um.note:make 'F#4 64 (- d1 p1)))
-(set n8 (um.note:make 'F#5 64 (- d1 p1)))
-(set n9 (um.note:make 'C#5 64 (- (* 2 d1) p1)))
-(set n10 (um.note:make 'D#5 64 (- (* 2 d1) p1)))
-
-(set n11 (um.note:make 'B3 64 (- (* 2 d1) p1)))
-(set n12 (um.note:make 'C#4 64 (- d1 p1)))
-(set n13 (um.note:make 'B4 64 (- d1 p1)))
-(set n14 (um.note:make 'F#4 64 (- (* 2 d1) p1)))
-(set n15 (um.note:make 'D#5 64 (- (* 2 d1) p1)))
-
-(set motive1 (list n1  r2 n2  r2 n4  r2 n1  r2 n3  r2 n1  r1 r1 r1))
-(set motive2 (list n1  r2 n2  r2 n5  r2 n1  r2 n3  r2 n1  r1 r1 r1))
-(set motive3 (list n6  r2 n7  r2 n9  r2 n6  r2 n8  r2 n6  r1 r1 r1))
-(set motive4 (list n6  r2 n7  r2 n10 r2 n6  r2 n8  r2 n6  r1 r1 r1))
-(set motive5 (list n11 r2 n12 r2 n14 r2 n11 r2 n13 r2 n11 r1 r1 r1))
-(set motive6 (list n11 r2 n12 r2 n15 r2 n11 r2 n13 r2 n11 r1 r1 r1))
-
-(set phrase1 (list motive1 motive1 motive2 motive1))
-(set phrase2 (list motive3 motive3 motive4 motive3))
-(set phrase3 (list motive5 motive5 motive6 motive5))
-(set phrases (++ phrase1 phrase2 phrase1 phrase3 phrase1))
-
-(defun play (phrases)
-  (list-comp ((<- phrase phrases))
-    (list-comp ((<- n phrase))
-        (progn 
-          (undermidi:play-note d n)
-          (timer:sleep (mref n 'duration))))))
-
-(play phrases)
-  
-(defun repeat
-  ((_ 0)
-   'ok)
-  ((phrases count)
-   (play phrases)
-   (repeat phrases (- count 1))))
-
-(repeat phrases 2)
+(priv.patches.seqs.rhythmic01:play d)
 
 ;; Ambient chord progression 1
 
 (set device "provs-mini_provs-mini_midi_1_24_0")
+(set device "core_midi_general")
 (set `#(ok ,d) (undermidi.devices:new device))
 
-(priv.progs.slow-chords01:play d)
+(priv.patches.progs.slow-chords01:play d)
 
 ;; Ambient chord progression 2
 
@@ -195,47 +117,7 @@ rebar3 as playlist-add lfe run -- name:seq1 type:mod source:priv.seqs.basic
 (set device "core_midi_general")
 (set `#(ok ,d) (undermidi.devices:new device))
 
-(defun cd1 () '(D3 F3 A3))
-(defun cd2 () '(D3 G3 B3))
-(defun cd3 () '(E3 G3 C4))
-(defun cd4 () '(F3 A3 C4))
-(defun cd5 () '(E3 A3 C4))
-(defun cd6 () '(F3 A3 D4))
-(defun cd7 () '(G3 D4 B4))
-(defun cd8 () '(A3 E4 C5))
-(defun cd9 () '(A3 F4 C5))
-(defun cd10 () '(A3 D4 F5))
-(defun cd11 () '(G3 D4 B5))
-(defun cd12 () '(E3 C4 A5))
-(defun cd13 () '(F3 D4 A5))
-(defun cd14 () '(F3 D4 A4))
-(defun cd15 () '(B2 D4 G4))
-(defun cd16 () '(E2 C4 G4))
-(defun cd17 () '(A1 C4 F4))
-(defun cd18 () '(D1 A2 F3 D4))
-
-(set all-chords
-
-(undermidi:play-chords d (prep-chords all-chords 40) 8400 0)
-
-(set cd1 (um.chord:make-fuzzy '(D3 F3 A3)) 40))
-(set cd2 (um.chord:make-fuzzy '(D3 G3 B3)) 40))
-(set cd3 (um.chord:make-fuzzy '(E3 G3 C4)) 40))
-(set cd4 (um.chord:lengthen (um.chord:make-fuzzy '(F3 A3 C4)) 40))
-(set cd5 (um.chord:lengthen (um.chord:make-fuzzy '(E3 A3 C4)) 40))
-(set cd6 (um.chord:lengthen (um.chord:make-fuzzy '(F3 A3 D4)) 40))
-(set cd7 (um.chord:lengthen (um.chord:make-fuzzy '(G3 D4 B4)) 40))
-(set cd8 (um.chord:lengthen (um.chord:make-fuzzy '(A3 E4 C5)) 40))
-(set cd9 (um.chord:lengthen (um.chord:make-fuzzy '(A3 F4 C5)) 40))
-(set cd10 (um.chord:lengthen (um.chord:make-fuzzy '(A3 D4 F5)) 40))
-(set cd11 (um.chord:lengthen (um.chord:make-fuzzy '(G3 D4 B5)) 40))
-(set cd12 (um.chord:lengthen (um.chord:make-fuzzy '(E3 C4 A5)) 40))
-(set cd13 (um.chord:lengthen (um.chord:make-fuzzy '(F3 D4 A5)) 40))
-(set cd14 (um.chord:lengthen (um.chord:make-fuzzy '(F3 D4 A4)) 40))
-(set cd15 (um.chord:lengthen (um.chord:make-fuzzy '(B2 D4 G4)) 40))
-(set cd16 (um.chord:lengthen (um.chord:make-fuzzy '(E2 C4 G4)) 40))
-(set cd17 (um.chord:lengthen (um.chord:make-fuzzy '(A1 C4 F4)) 40))
-(set cd18 (um.chord:lengthen (um.chord:make-fuzzy '(D1 A2 F3 D4)) 40))
+(priv.patches.progs.slow-chords02:play d)
 
 ```
 
