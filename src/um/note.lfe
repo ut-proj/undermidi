@@ -403,37 +403,56 @@ C       0
   ((name)
    (make name (get-velocity 'mp))))
 
-(defun make(name velocity)
+(defun make (name velocity)
   (make name velocity 100))
 
+(defun make (name velocity duration)
+  (make name velocity duration 0))
+
 (defun make
-  ((name velocity duration) (when (is_atom name))
-   (make (get-pitch name) velocity duration))
-  ((pitch velocity duration)
+  ((name velocity duration delay) (when (is_atom name))
+   (make (get-pitch name) velocity duration delay))
+  ((pitch velocity duration delay)
    `#m(pitch ,pitch
        velocity ,velocity
-       duration ,duration)))
+       duration ,duration
+       delay ,delay)))
 
 (defun make-fuzzy
   ((names) (when (is_list names))
    (list-comp ((<- n names)) (make-fuzzy n)))
-  ((name)
-   (make-fuzzy name (get-velocity 'mp))))
+  ((n-or-p)
+   (make-fuzzy n-or-p (default-values))))
 
-(defun make-fuzzy (v velocity)
-  (make-fuzzy v velocity 100))
+(defun make-fuzzy (n-or-p vals)
+  (make-fuzzy n-or-p vals (default-variances)))
 
 (defun make-fuzzy
-  ((name velocity duration) (when (is_atom name))
-   (make-fuzzy (get-pitch name) velocity duration))
-  ((p v d)
-   `#m(pitch ,p
-       velocity ,(fuzzy-velocity v)
-       duration ,(fuzzy-duration d))))
+  ((name vals variances) (when (is_atom name))
+   (make-fuzzy (get-pitch name) vals variances))
+  ((pitch values variances)
+   (let ((`#m(velocity ,v duration ,dur delay ,del)
+             (maps:merge (default-values) values))
+         (`#m(velocity ,v-var duration ,dur-var delay ,del-var)
+             (maps:merge (default-variances) variances)))
+    `#m(pitch ,pitch
+        velocity ,(fuzzy-velocity v v-var)
+        duration ,(fuzzy-duration dur dur-var)
+        delay ,(fuzzy-delay del del-var)))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; NOTE VALUE & DURATION ;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun default-values ()
+  `#m(velocity ,(get-velocity 'mp)
+      duration 100
+      delay 0))
+
+(defun default-variances ()
+  #m(velocity 2
+     duration 2
+     delay 150))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; NOTE VALUE, DURATION & DELAY (before playing) ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun values ()
   '(2                 ; double note / breve 
@@ -460,10 +479,16 @@ C       0
       (r... 1.875)))
 
 (defun fuzzy-duration (ms)
-  (fuzzy-duration ms 2))
+  (fuzzy-duration ms (mref (default-variances) 'duration)))
 
 (defun fuzzy-duration (ms variance)
-  (round (rand:normal ms variance)))
+  (round (abs (rand:normal ms variance))))
+
+(defun fuzzy-delay (ms)
+  (fuzzy-delay ms (mref (default-variances) 'delay)))
+
+(defun fuzzy-delay (ms variance)
+  (round (abs (rand:normal ms variance))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; DYNAMICS & VELOCITY ;;;
@@ -543,13 +568,13 @@ range of a given dynamic.
 
 |#
 (defun fuzzy-velocity (name)
-  (fuzzy-velocity name 2))
+  (fuzzy-velocity name (mref (default-variances) 'velocity)))
 
 (defun fuzzy-velocity
   ((name variance) (when (is_atom name))
-   (fuzzy-velocity (get-velocity name) 2))
+   (fuzzy-velocity (get-velocity name) variance))
   ((v variance)
-   (round (rand:normal v variance))))
+   (round (abs (rand:normal v variance)))))
 
 ;;;;;;;;;;;;;;;;;;;
 ;;; PERFORMANCE ;;;
@@ -564,11 +589,11 @@ range of a given dynamic.
 (defun play-note
   ((device channel note) (when (is_atom note))
    (play-note device channel (make note)))
-  ((device channel `#m(pitch ,p velocity ,v duration ,d))
+  ((device channel `#m(pitch ,p velocity ,v duration ,dur delay ,del))
    (let ((note-on (midimsg:note-on channel p v))
          (note-off (midimsg:note-on channel p 0)))
-     (um.ml:send device note-on)
-     (timer:apply_after d 'um.ml 'send `(,device ,note-off)))))
+     (timer:apply_after del 'um.ml 'send `(,device ,note-on))
+     (timer:apply_after (- dur del) 'um.ml 'send `(,device ,note-off)))))
 
 (defun play-notes (device channel notes)
   (play-notes device channel notes 250))
@@ -593,4 +618,9 @@ range of a given dynamic.
 (defun lengthen (notes duration-multiplier)
   (lists:map (lambda (m)
                (mset m 'duration (* duration-multiplier (mref m 'duration))))
+             notes))
+
+(defun delay (notes delay-multiplier)
+  (lists:map (lambda (m)
+               (mset m 'delay (* delay-multiplier (mref m 'delay))))
              notes))

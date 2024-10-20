@@ -19,6 +19,9 @@
 
 (defun play (device-pid)
   (undermidi:play-chords device-pid
-                         (priv.patches.common:prep-chords (all-chords) 40)
+                         (priv.patches.common:prep-chords (all-chords)
+                                                          40
+                                                          #m(velocity 20
+                                                             delay 500))
                          12800
                          0))
