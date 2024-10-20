@@ -1,4 +1,4 @@
-(defmodule priv.patches.seqs.wind-chimes-01
+(defmodule patches.seqs.wind-chimes-01
   (export all))
 
 ;; If you use Kontakt, from Native Instruments, there is a free
@@ -47,7 +47,7 @@
      ('true 100))))
 
 (defun play ()
-  (play (priv.patches.common:default-device-pid)))
+  (play (patches.common:default-device-pid)))
 
 (defun play (device-pid)
   (play device-pid (choices) (v-start) (delay-start)))
