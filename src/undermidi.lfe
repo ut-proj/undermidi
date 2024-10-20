@@ -113,6 +113,20 @@
                                  'play-chords
                                  (list chords delay repeats)))
 
+;; CC
+
+(defun sustain-on (pid)
+  (undermidi.device.client:apply pid
+                                 'um.cc
+                                 'sustain-on
+                                 '()))
+
+(defun sustain-off (pid)
+  (undermidi.device.client:apply pid
+                                 'um.cc
+                                 'sustain-off
+                                 '()))
+
 ;;; Aliases
 
 (defun version ()
