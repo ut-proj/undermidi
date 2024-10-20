@@ -1,22 +1,27 @@
 (defmodule patches
   (export all))
 
+(defun top-level () "patches")
+
 (defun dir ()
-  (filename:join (code:priv_dir 'undermidi) "patches"))
+  (filename:join (code:priv_dir 'undermidi) (top-level)))
 
 (defun make-data ()
   (make-data ""))
 
 (defun make-data (patch-path)
-  (make-data patch-path "" '() "" "" ""))
+  (make-data patch-path "" '() "" "" "" ""))
 
-(defun make-data (abs-path rel-path segs cat short long)
-  `#m(abs-path ,abs-path
-      rel-path ,rel-path
-      segments ,segs
-      category ,cat
-      short-name ,short
-      long-name ,long))
+(defun make-data (abs-path rel-path segs cat short long mod)
+  (let ((`#(ok ,dir) (file:get_cwd)))
+    `#m(abs-path ,abs-path
+        rel-path ,rel-path
+        segments ,segs
+        category ,cat
+        short-name ,short
+        long-name ,long
+        module ,mod
+        exec-dir ,dir)))
 
 (defun list-all ()
   (filelib:fold_files (dir) ".*lfe$" 'true #'file-filter/2 '()))
@@ -29,8 +34,9 @@
       #(error "no category")
       (let* ((`(,cat ,short-name) segs)
              (cat (parse-category cat))
-             (long-name (parse-name short-name)))
-        (make-data abs-path rel-path segs cat short-name long-name)))))
+             (long-name (parse-name short-name))
+             (mod (list_to_atom (string:join (++ (list (top-level)) segs) "." ))))
+        (make-data abs-path rel-path segs cat short-name long-name mod)))))
 
 (defun parse-category (cat)
   (case cat
