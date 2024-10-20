@@ -185,7 +185,7 @@
 (defun seq (start end)
   (if (> end start)
     (lists:seq start end)
-    (lists:reverse (lists:seq end start))))
+    (lists:seq end start)))
 
 (defun table-info
   ((table-name) (when (is_atom table-name))
@@ -200,3 +200,19 @@
                    name ,table-name
                    description ,table-desc)
                (maps:from_list (table-info table-name)))))
+
+(defun linear-ramp (start-val end-val dur)
+  (let* ((vals (seq start-val end-val))
+         (steps (length vals))
+         (time-incr (/ (* 1000 dur) steps)))
+    `#m(values ,vals
+        ms-per-value ,time-incr)))
+
+(defun linear-cycle (start-val end-val dur)
+  (let* ((up (seq start-val end-val))
+         (down (lists:reverse up))
+         (vals (++ up down))
+         (steps (length vals))
+         (time-incr (/ (* 1000 dur) steps)))
+    `#m(values ,vals
+        ms-per-value ,time-incr)))
