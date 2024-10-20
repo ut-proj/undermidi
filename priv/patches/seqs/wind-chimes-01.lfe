@@ -1,4 +1,4 @@
-(defmodule priv.patches.seqs.wind-chimes01
+(defmodule priv.patches.seqs.wind-chimes-01
   (export all))
 
 ;; If you use Kontakt, from Native Instruments, there is a free
