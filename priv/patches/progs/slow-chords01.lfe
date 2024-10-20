@@ -21,7 +21,9 @@
   (undermidi:play-chords device-pid
                          (priv.patches.common:prep-chords (all-chords)
                                                           40
+                                                          8
                                                           #m(velocity 20
                                                              delay 500))
-                         12800
-                         0))
+                         #m(delay 12400
+                            repeats 0
+                            sustain true)))
