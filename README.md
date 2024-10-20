@@ -35,11 +35,18 @@ $ rebar3 compile
 ```
 
 Then start the LFE REPL with prefined options for undermidi:
+
 ```shell
 $ rebar3 as undermidi repl
 ```
 
-**IMPORTANT!!**: the command given above automatically starts undermidid. If you do not use that command, you will need to manually start undermidi. Not doing so will result in many commands cusing a segmentation fault of the Erlang VM due to the MIDI NIF not being initialised!
+**IMPORTANT!!**: the command given above automatically starts undermidi. If you do not use that command, you will need to manually start undermidi. Not doing so will result in many commands causing a segmentation fault of the Erlang VM due to the MIDI NIF not being initialised!
+
+If you find yourself tiring of typing the above command, you can use the simple bash script that does the same:
+
+``` shell
+$ ./priv/scripts/run.sh
+```
 
 Once the LFE REPL is ready, you can start the app:
 
@@ -84,10 +91,6 @@ Note that, depending upon the configured log level, you may see a fair amount of
 
 ;; Experiment in adding a playlist to the playlist gen_server
 
-(set device "model_15")
-(set `#(ok ,d) (undermidi.devices:new device))
-(priv.seqs.basic:play d)
-
 (undermidi.player.queue:dump)
 
 rebar3 as playlist-add lfe run -- name:seq1 type:mod source:priv.patches.progs.slow-chords01
@@ -95,12 +98,13 @@ rebar3 as playlist-add lfe run -- name:seq1 type:mod source:priv.patches.progs.s
 (undermidi.player.queue:dump)
 (undermidi.player.queue:play-next "model_15")
 
-;; rhythmic sequence
+;; Rhythmic sequence
 
 (set device "provs-mini_provs-mini_midi_1_24_0")
 (set device "model_15")
 (set device "midi_bus_1")
 (set `#(ok ,d) (undermidi.devices:new device))
+
 (priv.patches.seqs.rhythmic01:play d)
 
 ;; Ambient chord progression 1
@@ -119,6 +123,7 @@ rebar3 as playlist-add lfe run -- name:seq1 type:mod source:priv.patches.progs.s
 
 (priv.patches.progs.slow-chords02:play d)
 
+;; More radnom chords playing
 ```
 
 ## API

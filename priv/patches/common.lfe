@@ -11,3 +11,10 @@
     (um.chord:lengthen
       (um.chord:make-fuzzy chord)
       len-multiplier)))
+
+(defun prep-chords (chords len-multiplier delay-multiplier variances)
+  (list-comp ((<- chord chords))
+    (clj:-> chord
+            (um.chord:make-fuzzy variances)
+            (um.chord:lengthen len-multiplier)
+            (um.chord:delay delay-multiplier))))
