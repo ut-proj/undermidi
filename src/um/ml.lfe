@@ -2,6 +2,8 @@
 (defmodule um.ml
   (export all))
 
+(include-lib "logjam/include/logjam.hrl")
+
 (defun batch (device terms)
   ;; It is REQUIRED that the `terms` had been built with the device channel
   ;; value before being passed to this function!
@@ -15,6 +17,7 @@
 (defun send (device term)
   ;; It is REQUIRED that the `term` had been built with the device channel
   ;; value before being passed to this function!
+  ;;(log-debug "Sending term: ~p" (list term))
   (let ((encoded (midibin:encode term)))
     (case encoded
       (`#(error ,_) encoded)

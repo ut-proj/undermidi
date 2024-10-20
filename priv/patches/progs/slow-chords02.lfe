@@ -36,5 +36,6 @@
                                                           8
                                                           #m(velocity 80
                                                              delay 2000))
-                         8400
-                         0))
+                         #m(delay 8400
+                            repeats 0
+                            sustain true)))
