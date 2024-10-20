@@ -87,13 +87,13 @@ Note that, depending upon the configured log level, you may see a fair amount of
 (undermidi:list-devices)
 (set device "model_15")
 (set `#(ok ,d) (undermidi.devices:new device))
-(priv.patches.seqs.basic:play d)
+(patches.seqs.basic:play d)
 
 ;; Experiment in adding a playlist to the playlist gen_server
 
 (undermidi.player.queue:dump)
 
-rebar3 as playlist-add lfe run -- name:seq1 type:mod source:priv.patches.progs.slow-chords01
+rebar3 as playlist-add lfe run -- name:seq1 type:mod source:patches.progs.slow-chords01
 
 (undermidi.player.queue:dump)
 (undermidi.player.queue:play-next "model_15")
@@ -105,7 +105,7 @@ rebar3 as playlist-add lfe run -- name:seq1 type:mod source:priv.patches.progs.s
 (set device "midi_bus_1")
 (set `#(ok ,d) (undermidi.devices:new device))
 
-(priv.patches.seqs.rhythmic01:play d)
+(patches.seqs.rhythmic01:play d)
 
 ;; Ambient chord progression 1
 
@@ -113,7 +113,7 @@ rebar3 as playlist-add lfe run -- name:seq1 type:mod source:priv.patches.progs.s
 (set device "core_midi_general")
 (set `#(ok ,d) (undermidi.devices:new device))
 
-(priv.patches.progs.slow-chords01:play d)
+(patches.progs.slow-chords01:play d)
 
 ;; Ambient chord progression 2
 
@@ -121,9 +121,13 @@ rebar3 as playlist-add lfe run -- name:seq1 type:mod source:priv.patches.progs.s
 (set device "core_midi_general")
 (set `#(ok ,d) (undermidi.devices:new device))
 
-(priv.patches.progs.slow-chords02:play d)
+(patches.progs.slow-chords02:play d)
 
 ;; More radnom chords playing
+(set variances #m(velocity 80
+                delay 4000))
+(set chrds (patches.progs.slow-chords02:all-chords))
+(set preped (patches.common:prep-chords chrds 60 variances))
 ```
 
 ## API

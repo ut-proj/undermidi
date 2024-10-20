@@ -1,4 +1,4 @@
-(defmodule priv.patches.common
+(defmodule patches.common
   (export all))
 
 (defun default-device () "midi_bus_1")

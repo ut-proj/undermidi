@@ -1,4 +1,4 @@
-(defmodule priv.patches.progs.slow-chords-02
+(defmodule patches.progs.slow-chords-02
   (export all))
 
 (defun cd1 () '(D3 F3 A3))
@@ -27,15 +27,15 @@
                             (cd14) (cd15) (cd16) (cd17) (cd18)))
 
 (defun play ()
-  (play (priv.patches.common:default-device-pid)))
+  (play (patches.common:default-device-pid)))
 
 (defun play (device-pid)
   (undermidi:play-chords device-pid
-                         (priv.patches.common:prep-chords (all-chords)
-                                                          60
-                                                          8
-                                                          #m(velocity 80
-                                                             delay 2000))
+                         (patches.common:prep-chords (all-chords)
+                                                     60
+                                                     8
+                                                     #m(velocity 80
+                                                        delay 2000))
                          #m(delay 8400
                             repeats 0
                             sustain true)))
