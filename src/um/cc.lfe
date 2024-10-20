@@ -1,11 +1,11 @@
 (defmodule um.cc
   (export all))
 
-(defun set (device _channel msg)
+(defun set (device msg)
   (um.ml:send device msg))
 
 (defun sustain-on (device channel)
-  (set device channel (midimsg:cc 64 127)))
+  (set device (midimsg:cc channel 64 127)))
 
 (defun sustain-off (device channel)
-  (set device channel (midimsg:cc 64 0)))
+  (set device (midimsg:cc channel 64 0)))
