@@ -46,7 +46,7 @@
 ;;;;;::=-----------------------------=::;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun start_link (device-name)
-  (log-info "Starting ~s ..." (list (NAME)))
+  (log-info "Starting ~s (~s) ..." (list (NAME) device-name))
   (gen_server:start_link (MODULE)
                          device-name
                          (genserver-opts)))
