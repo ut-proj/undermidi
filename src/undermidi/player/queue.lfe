@@ -281,7 +281,10 @@
   ((next-song (= `#m(device "") state))
    (play-next next-song (mset state
                               'device
-                              (proplists:get_value 1 (mref (um:devices) 'outputs)))))
+                              ;; XXX this isn't smart enough ... e.g., ordering changes on the
+                              ;; RaspberryPI with external synths connected. In fact, the synth
+                              ;; name isn't always the same when the Pi starts up.
+                              (proplists:get_value 2 (mref (um:devices) 'outputs)))))
   ((next-song (= `#m(device ,device channel ,channel) state))
    (if (playing? state)
      (progn
