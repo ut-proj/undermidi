@@ -20,11 +20,11 @@
 (defun cd17 () '(A1 C4 F4))
 (defun cd18 () '(D1 A2 F3 D4))
 
-(defun all-chords ()  (++ (list (cd1) (cd2) (cd3) (cd4))
-                          (list (cd1) (cd2) (cd5) (cd4))
-                          (list (cd6) (cd7) (cd8) (cd9))
-                          (list (cd10) (cd11) (cd12) (cd13))
-                          (list (cd14) (cd15) (cd16) (cd17) (cd18))))
+(defun all-chords ()  (list (cd1) (cd2) (cd3) (cd4)
+                            (cd1) (cd2) (cd5) (cd4)
+                            (cd6) (cd7) (cd8) (cd9)
+                            (cd10) (cd11) (cd12) (cd13)
+                            (cd14) (cd15) (cd16) (cd17) (cd18)))
 
 (defun play ()
   (play (priv.patches.common:default-device-pid)))
