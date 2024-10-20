@@ -28,25 +28,29 @@
      (timer:apply_after (- dur del) 'um.ml 'send `(,device ,note-off))
      (play device channel tail))))
 
+(defun default-opts ()
+  `#m(delay 250
+      repeats 0
+      sustain false))
+
 (defun play-chords (device channel chords)
-  (play-chords device channel chords 250))
+  (play-chords device channel chords (default-opts)))
 
-(defun play-chords (device channel chords delay)
-  (play-chords device channel chords delay 0))
-
-(defun play-chords (device channel chords delay repeats)
-  (play-chords device channel chords delay repeats '()))
+(defun play-chords (device channel chords opts)
+  (play-chords device channel chords opts '()))
 
 (defun play-chords
-  ((device channel '() _ 0 _)
+  ((device channel '() `#m(repeats 0) _)
    'ok)
-  ((device channel '() delay repeats acc)
-   (play-chords device channel acc delay (- repeats 1) '()))
-  ((device channel `(,head . ,tail) delay repeats acc)
+  ((device channel '() (= `#m(repeats ,rs) opts) acc)
+   (play-chords device channel acc (mupd opts 'repeats (- rs 1)) '()))
+  ((device channel `(,head . ,tail) (= `#m(sustain ,sus delay ,del) opts) acc)
+   (if sus (um.cc:sustain-on device channel))
    (play device channel (sort head))
    ;; TODO: this is a hack; we need to send timing data MIDI messages ...
-   (timer:sleep delay)
-   (play-chords device channel tail delay repeats (++ acc `(,head)))))
+   (timer:sleep del)
+   (if sus (um.cc:sustain-off device channel))
+   (play-chords device channel tail opts (++ acc `(,head)))))
 
 (defun lengthen (chord duration-multiplier)
   (um.note:lengthen chord duration-multiplier))
