@@ -1,4 +1,4 @@
-(defmodule priv.patches.progs.slow-chords02
+(defmodule priv.patches.progs.slow-chords-02
   (export all))
 
 (defun cd1 () '(D3 F3 A3))
