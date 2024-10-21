@@ -17,6 +17,8 @@ undermidi supports two use cases, both of which utilise the Erlang term MIDI mes
 
 Note that the calls made to midilib use the `midibin` module for binary MIDI messages, which in turn uses the [Erlang MIDI NIF](https://github.com/sonic-pi-net/sonic-pi/tree/dev/app/external/sp_midi) provided by the [Sonic Pi project](https://github.com/sonic-pi-net/sonic-pi).
 
+**Update**: This use of an Erlang NIF is new in 0.3.0! As part of that change, we made _significant_ and **breaking** changes to the `undermidi` API.
+
 ## Dependencies & Setup
 
 This application assumes that the following are on your system:
@@ -56,80 +58,6 @@ Once the LFE REPL is ready, you can start the app:
 
 Note that, depending upon the configured log level, you may see a fair amount of output.
 
-## Scratch (temporary)
-
-``` lisp
-(undermidi:start)
-(undermidi:list-devices)
-(set device "model_15")
-(set channel 1)
-(set term (midimsg:note-on channel 48 64))
-(um.ml:send device term)
-(set term (midimsg:note-off channel 48 64))
-(um.ml:send device term)
-
-(undermidi:list-devices)
-(set device "model_15")
-(set channel 1)
-(um.note:play device channel (um.note:make 'C3))
-
-(undermidi:list-devices)
-(set device "model_15")
-(set channel 1)
-(um.note:play-notes device channel (um.note:make '(C3 C3 C4 C3)) 500)
-(set notes (um.note:make '(C3 C3 Eb3 C3 C3 Bb3 C4 C3)))
-(um.note:play-notes device channel notes 250 8)
-(set notes (um.note:make '(C3 C3 Eb3 C3 Eb4 Bb3 C4 C3)))
-(um.note:play-notes device channel notes 250 8)
-
-;; Basic sequence
-
-(undermidi:list-devices)
-(set device "model_15")
-(set `#(ok ,d) (undermidi.devices:new device))
-(patches.seqs.basic:play d)
-
-;; Experiment in adding a playlist to the playlist gen_server
-
-(undermidi.player.queue:dump)
-
-rebar3 as playlist-add lfe run -- name:seq1 type:mod source:patches.progs.slow-chords01
-
-(undermidi.player.queue:dump)
-(undermidi.player.queue:play-next "model_15")
-
-;; Rhythmic sequence
-
-(set device "provs-mini_provs-mini_midi_1_24_0")
-(set device "model_15")
-(set device "midi_bus_1")
-(set `#(ok ,d) (undermidi.devices:new device))
-
-(patches.seqs.rhythmic01:play d)
-
-;; Ambient chord progression 1
-
-(set device "provs-mini_provs-mini_midi_1_24_0")
-(set device "core_midi_general")
-(set `#(ok ,d) (undermidi.devices:new device))
-
-(patches.progs.slow-chords01:play d)
-
-;; Ambient chord progression 2
-
-(set device "provs-mini_provs-mini_midi_1_24_0")
-(set device "core_midi_general")
-(set `#(ok ,d) (undermidi.devices:new device))
-
-(patches.progs.slow-chords02:play d)
-
-;; More radnom chords playing
-(set variances #m(velocity 80
-                delay 4000))
-(set chrds (patches.progs.slow-chords02:all-chords))
-(set preped (patches.common:prep-chords chrds 60 variances))
-```
-
 ## API
 
 There are two ways to use this library:
@@ -166,6 +94,8 @@ outputs
 ok
 ```
 
+The output of this display function will vary, depending upon system and connected/configured MIDI devices.
+
 We'll use one of these names in the examples below, Moog's `"model_15"`.
 
 ### Stateful
@@ -197,8 +127,6 @@ lfe> (undermidi:play-notes d '(C3 C3 Eb3 C3 C3 Bb3 C3 C4))
 
 The `play-notes` function also accepts optional arguments for changing the time between the notes as well as the ability to repeat the series.
 
-#### Scales
-
 #### Chords
 
 #### Sequences
@@ -220,6 +148,16 @@ lfe> (um.note:play device channel '(C3 C3 Eb3 C3 C3 Bb3 C3 C4))
 ```
 
 #### Chords
+
+#### Sequences
+
+## Licenses
+
+undermidi: BSD 2-Clause
+
+Sonic Pi's Erlang NIF: MIT
+
+RtMIDI: MIT-like (optional notification)
 
 ## OLD -- will be (re)moved
 
@@ -457,6 +395,8 @@ You may send this message with either the `send-parallel` or the shorter `cast` 
                         (cast (midimsg:note-off (Bb2))
                               (midimsg:note-off (F3))
                               (midimsg:note-off (Db4))))
+
+
 ```
 
 [//]: ---Named-Links---
