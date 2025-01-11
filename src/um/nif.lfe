@@ -1,7 +1,7 @@
 (defmodule um.nif
   (export all))
 
-(include-lib "sp_midi.hrl")
+(include-lib "undermidi/include/sp_midi.hrl")
 
 (defun lib-file () (LIB))
 
