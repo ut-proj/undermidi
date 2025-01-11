@@ -18,7 +18,7 @@
 (defun start (_start-type _start-args)
   (let ((cfg-file "config/sys.config"))
     (logjam:set-config `#(path ,cfg-file))
-    (log-info "Starting OTP application ..." '())
+    (log-info "Starting undermidi OTP application ..." '())
     (um.nif:initialise)
     (io:format "~s" (list (undermidi.util:banner)))
     (logjam:set-config `#(path ,cfg-file))
