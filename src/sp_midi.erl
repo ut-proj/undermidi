@@ -17,7 +17,7 @@
 
 -on_load(init/0).
 
--include_lib("sp_midi.hrl").
+-include_lib("undermidi/include/sp_midi.hrl").
 
 init() ->
     ok = erlang:load_nif(?LIB, 0).

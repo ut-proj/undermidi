@@ -1,3 +1,4 @@
--define(LIB_NAME, "libsp_midi").
+-define(LIB_PROJ, code:lib_dir(undermidi)).
 -define(LIB_DIR, "src").
--define(LIB, filename:join([?LIB_DIR, ?LIB_NAME])).
+-define(LIB_NAME, "libsp_midi").
+-define(LIB, filename:join([?LIB_PROJ, ?LIB_DIR, ?LIB_NAME])).
