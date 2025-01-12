@@ -17,5 +17,10 @@
 
   {licenses, ["BSD 2-clause"]},
   {links, []},
-  {exclude_files, ["priv/*"]}
- ]}.
+  {exclude_files, [
+    "priv/images/*"
+  ]},
+  {include_files, [
+    "config"
+  ]}
+]}.
