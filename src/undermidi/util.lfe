@@ -174,13 +174,7 @@
                           ,prompt))))
 
 (defun read-priv (priv-rel-path)
-  (case (file:read_file (priv-file priv-rel-path))
-    (`#(ok ,data) data)
-    (other other)))
-
-(defun priv-file (priv-rel-path)
-  (filename:join (code:priv_dir 'undermidi)
-                 priv-rel-path))
+  (lutil-file:read-priv 'undermidi priv-rel-path))
 
 (defun seq (start end)
   (if (> end start)

@@ -24,7 +24,7 @@
 (defun init (_args)
   `#(ok #(#m(strategy one_for_one
              intensity 3
-	           period 60)
+	      period 60)
             (,(child 'undermidi.devices)
              ,(child 'undermidi.device.supervisor)
              ,(child 'undermidi.player.queue)
