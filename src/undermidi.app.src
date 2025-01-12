@@ -1,6 +1,6 @@
 {application, undermidi,
  [{description, "A set of OTP servers that faciliate live MIDI composition and performance"},
-  {vsn, "0.3.0-dev"},
+  {vsn, "0.4.0-dev"},
   {registered, [undermidi]},
   {mod, {'undermidi.app', []}},
   {applications,
