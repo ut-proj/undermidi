@@ -3,10 +3,12 @@
 [![Build Status][gh-actions-badge]][gh-actions]
 [![LFE Versions][lfe badge]][lfe]
 [![Erlang Versions][erlang badge]][versions]
-
-[![][logo]][logo-large]
+[![Tags][github-tags-badge]][github-tags]
+[![Downloads][hex-downloads]][hex-package]
 
 *A set of OTP servers that faciliate live MIDI composition and performance*
+
+[![][logo]][logo-large]
 
 ## About
 
@@ -170,3 +172,9 @@ RtMIDI: MIT-like (optional notification)
 [lfe badge]: https://img.shields.io/badge/lfe-2.1-blue.svg
 [erlang badge]: https://img.shields.io/badge/erlang-25%20to%2027-blue.svg
 [versions]: https://github.com/ut-proj/undermidi/blob/master/.github/workflows/cicd.yml
+[github-tags]: https://github.com/ut-proj/undermidi/tags
+[github-tags-badge]: https://img.shields.io/github/tag/ut-proj/undermidi.svg
+[github-downloads]: https://img.shields.io/github/downloads/ut-proj/undermidi/total.svg
+[hex-badge]: https://img.shields.io/hexpm/v/undermidi.svg?maxAge=2592000
+[hex-package]: https://hex.pm/packages/undermidi
+[hex-downloads]: https://img.shields.io/hexpm/dt/undermidi.svg
